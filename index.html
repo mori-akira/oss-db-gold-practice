@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <title>OSS-DB Gold Practice</title>
+    <meta name="author" content="Moriaki Kogure">
+    <link rel="stylesheet" href="./asset/style.css">
+</head>
+
+<body>
+    <h1>OSS-DB Gold Practice</h1>
+
+    <h2>2章 アーキテクチャの基本</h2>
+
+    <h3>プロセスの構成</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>プロセス名</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><mask-block>マスタサーバ</mask-block></td>
+                <td>最初に起動される親プロセス</td>
+            </tr>
+            <tr>
+                <td><mask-block>ロガー</mask-block></td>
+                <td>サーバログを書き出す</td>
+            </tr>
+            <tr>
+                <td><mask-block>チェックポインタ</mask-block></td>
+                <td>すべてのダーティページをデータファイルに書き出す</td>
+            </tr>
+            <tr>
+                <td><mask-block>ライタ</mask-block></td>
+                <td>共有バッファの内容をデータファイルに書き出す</td>
+            </tr>
+            <tr>
+                <td><mask-block>WALライタ</mask-block></td>
+                <td>WALバッファの内容をWALファイルに書き出す</td>
+            </tr>
+            <tr>
+                <td><mask-block>自動バキュームランチャ</mask-block></td>
+                <td>設定に従って自動バキュームワーカを起動する</td>
+            </tr>
+            <tr>
+                <td><mask-block>自動バキュームワーカ</mask-block></td>
+                <td>設定に従って自動バキューム処理を行う</td>
+            </tr>
+            <tr>
+                <td><mask-block>統計情報コレクタ</mask-block></td>
+                <td>データベースの活動状況に関する統計情報を収集する</td>
+            </tr>
+            <tr>
+                <td><mask-block>バックグラウンドワーカ</mask-block></td>
+                <td>ロジカルレプリケーション用のまたはユーザ定義のワーカ</td>
+            </tr>
+            <tr>
+                <td><mask-block>バックエンドプロセス</mask-block></td>
+                <td>クライアントからの接続要求に対して起動され、クエリを処理する</td>
+            </tr>
+            <tr>
+                <td><mask-block>パラレルワーカ</mask-block></td>
+                <td>パラレルスキャン実行時に起動され、クエリを処理する</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>共有メモリ域</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>メモリ名</th>
+                <th>物理名</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><mask-block>共有バッファ</mask-block></td>
+                <td><mask-block>shared_buffers</mask-block></td>
+                <td>テーブルやインデックスのデータをキャッシュする領域</td>
+            </tr>
+            <tr>
+                <td><mask-block>WALバッファ</mask-block></td>
+                <td><mask-block>wal_buffers</mask-block></td>
+                <td>ディスクに書き込まれていないトランザクションログをキャッシュする領域</td>
+            </tr>
+            <tr>
+                <td><mask-block>空き領域マップ</mask-block></td>
+                <td><mask-block>Free Space Map</mask-block></td>
+                <td>テーブル上の利用可能な領域を示す情報を扱う領域</td>
+            </tr>
+            <tr>
+                <td><mask-block>可視性マップ</mask-block></td>
+                <td><mask-block>Visibility Map</mask-block></td>
+                <td>テーブルのデータが可視であるか否かを管理する情報を扱う領域</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>プロセスメモリ</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>メモリ名</th>
+                <th>物理名</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><mask-block>作業メモリ</mask-block></td>
+                <td><mask-block>work_mem</mask-block></td>
+                <td>クエリ実行時に行われる、並び替えとハッシュテーブル操作のために使われる領域</td>
+            </tr>
+            <tr>
+                <td><mask-block>メンテナンス用作業メモリ</mask-block></td>
+                <td><mask-block>maintenance_work_mem</mask-block></td>
+                <td>バキューム、インデックス作成、外部キー作成などの、データベースメンテナンスの操作で使用する領域</td>
+            </tr>
+            <tr>
+                <td><mask-block>一時バッファ</mask-block></td>
+                <td><mask-block>temp_buffers</mask-block></td>
+                <td>バックエンドプロセス毎に作成される一時テーブルにアクセスするときに用いるメモリ領域</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>主なディレクトリ</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>ディレクトリ名</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><mask-block>base</mask-block></td>
+                <td>データベースごとに作成される、識別子(oid)を示す数字で名づけられるディレクトリ</td>
+            </tr>
+            <tr>
+                <td><mask-block>global</mask-block></td>
+                <td>データベースクラスタで共有するテーブルを保有するディレクトリ</td>
+            </tr>
+            <tr>
+                <td><mask-block>pg_wal</mask-block></td>
+                <td>WALファイルを格納するディレクトリ</td>
+            </tr>
+            <tr>
+                <td><mask-block>pg_xact</mask-block></td>
+                <td>トランザクションのコミット状態を管理するファイルが格納されるディレクトリ</td>
+            </tr>
+            <tr>
+                <td><mask-block>pg_tblspc</mask-block></td>
+                <td>テーブル空間として作成されたディレクトリへのシンボリックリンクを格納するディレクトリ</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>主なファイル</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>ファイル</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><mask-block>PG_VERSION</mask-block></td>
+                <td>PostgreSQLのメジャーバージョンが書き込まれるテキストファイル</td>
+            </tr>
+            <tr>
+                <td><mask-block>テーブルファイル</mask-block></td>
+                <td>
+                    テーブルデータの実態が格納されているファイル<br>
+                    <mask-block>8192</mask-block>バイトの<mask-block>ページ</mask-block>と呼ばれる単位で構成される。
+                </td>
+            </tr>
+            <tr>
+                <td><mask-block>インデックスファイル</mask-block></td>
+                <td>
+                    インデックスの情報が格納されているファイル<br>
+                    <mask-block>8192</mask-block>バイトの<mask-block>ページ</mask-block>と呼ばれる単位で構成される。
+                </td>
+            </tr>
+            <tr>
+                <td><mask-block>TOASTファイル</mask-block></td>
+                <td>
+                    テーブル内に長大な行を格納する場合に生成される特殊なファイル<br>
+                    このファイルが作られるとき、テーブルの格納領域には<mask-block>oid</mask-block>が格納される。
+                </td>
+            </tr>
+            <tr>
+                <td><mask-block>Free Space Mapファイル</mask-block></td>
+                <td>
+                    空き領域を追跡するための情報が格納されたファイル<br>
+                    ファイル名は、「テーブル/インデックスのoid_<mask-block>fsm</mask-block>」となる。
+                </td>
+            </tr>
+            <tr>
+                <td><mask-block>Visibility Mapファイル</mask-block></td>
+                <td>
+                    テーブルの可視性を管理するファイル<br>
+                    ファイル名は、「テーブルのoid_<mask-block>vm</mask-block>」となる。
+                </td>
+            </tr>
+            <tr>
+                <td><mask-block>WALファイル</mask-block></td>
+                <td>
+                    PostgreSQLに対して行われた更新操作を記録するファイル<br>
+                    ファイルは固定サイズで、initdbやpg_ctlコマンド等を用いてクラスタを作成する際に指定する。<br>
+                    デフォルトサイズは<mask-block>16MB</mask-block>である。
+                </td>
+            </tr>
+            <tr>
+                <td><mask-block>postgresql.conf</mask-block></td>
+                <td>PostgreSQL全体の動作を設定するファイル</td>
+            </tr>
+            <tr>
+                <td><mask-block>pg_hba.conf</mask-block></td>
+                <td>クライアントからの接続を管理する設定ファイル</td>
+            </tr>
+            <tr>
+                <td><mask-block>postmaster.pid</mask-block></td>
+                <td>PostgreSQLの稼働中に作成されるロックファイル</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>3章 各種設定ファイルと基本設定</h2>
+
+    <h3>PostgreSQLの設定ファイル</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>ファイル名</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><mask-block>postgresql.conf</mask-block></td>
+                <td>PostgreSQL全体の動作を制御する</td>
+            </tr>
+            <tr>
+                <td><mask-block>pg_hba.conf</mask-block></td>
+                <td>クライアントからの接続を制御する</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script src="./asset/script.js"></script>
+</body>
+
+</html>
