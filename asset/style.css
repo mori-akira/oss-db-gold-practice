@@ -73,6 +73,7 @@ mask-block {
     padding: .1rem .5rem;
     color: #338;
     background-color: #338;
+    font-size: 1rem;
     cursor: pointer;
 }
 
