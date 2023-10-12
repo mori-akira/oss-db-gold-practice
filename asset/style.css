@@ -91,6 +91,7 @@ pre {
 mask-block,
 m-b {
     display: inline-block;
+    margin: .1rem 0;
     padding: .1rem .5rem;
     color: #338;
     background-color: #338;
@@ -100,7 +101,7 @@ m-b {
 
 mask-block.clicked,
 m-b.clicked {
-    background-color: #CCF;
+    background-color: #DDF;
 }
 
 mask-block:not(.clicked)::selection,

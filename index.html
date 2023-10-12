@@ -561,11 +561,13 @@
         マッピング名を<code>foo_ident</code>、OSユーザ名を<code>foo</code>、マッピングするデータベース名を<code>user1</code>とするとき、
         pg_ident.confは次のように記述する。
     </p>
+    <h4>pg_ident.conf</h4>
     <pre><code>
 # map-name system-user-name database-user-name
 <m-b>foo_ident</m-b> <m-b>foo</m-b> <m-b>user1</m-b>
     </code></pre>
     <p>また、ident認証で上記のマッピングを使用する場合、pg_hba.confには次のように記述する。</p>
+    <h4>pg_hba.conf</h4>
     <pre><code>
 # TYPE DATABASE USER METHOD
 host all all 192.168.10.0/24 <m-b>ident map=foo_indent</m-b>
@@ -798,7 +800,7 @@ host all all 192.168.10.0/24 <m-b>ident map=foo_indent</m-b>
             </tr>
         </tbody>
     </table>
-    
+
     <h3>同時実行制御</h3>
     <p>
         PostgreSQLでは、<m-b>追記型アーキテクチャ</m-b>というアーキテクチャを採用することで、
@@ -814,7 +816,219 @@ host all all 192.168.10.0/24 <m-b>ident map=foo_indent</m-b>
 
     <h2>5章 テーブル設計</h2>
 
+    <h3>文字型</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>型名</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <m-b>character varying(n)</m-b>、
+                    <m-b>varchar(n)</m-b>
+                </td>
+                <td>上限n文字まで格納可能な可変長データ型</td>
+            </tr>
+            <tr>
+                <td>
+                    <m-b>character(n)</m-b>、
+                    <m-b>char(n)</m-b>
+                </td>
+                <td>
+                    上限n文字までを格納可能な固定長データ型<br>
+                    格納時にn文字に満たない場合は<m-b>末尾</m-b>に空白を付与して格納する。
+                    検索時にも空白が付与された結果が取得される。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>text</m-b></td>
+                <td>上限指定なしの可変長データ型(最大<m-b>1GB</m-b>まで格納可能)</td>
+            </tr>
+        </tbody>
+    </table>
+    <p>
+        データ格納時に、次のルールに従ってヘッダ情報が付与される。
+    </p>
+    <ul>
+        <li>文字列長が<m-b>126バイト</m-b>以下の場合、ヘッダ情報として<m-b>1バイト</m-b>使用する</li>
+        <li>文字列長が<m-b>127バイト</m-b>以上の場合、ヘッダ情報として<m-b>4バイト</m-b>使用する</li>
+        <li>
+            非常に長い文字列の(テーブル内に格納される値が<m-b>2kB</m-b>を超える)場合、<m-b>TOAST領域</m-b>に分割して格納される<br>
+            特に要件が無ければ、PostgreSQLにおいて文字型として用いることが推奨される。
+        </li>
+    </ul>
 
+    <h3>char型に対する文字列操作の注意点</h3>
+    <p>
+        char型の文字列を文字列関数や文字列操作演算子で扱う場合、空白の扱いが異なる場合があるため注意が必要である。<br>
+        例えば、char(8)のカラム<code>c</code>と、varchar(8)のカラム<code>v</code>をもつテーブル<code>example</code>に対し、
+        concat関数と||演算子を用いた結合では次のような差が生まれる。
+    </p>
+    <h4>exampleテーブルのレコード</h4>
+    <pre><code>
+SELECT * FROM example;
+    </code></pre>
+    <h4>結果</h4>
+    <pre><code>
+  c |  v
+----+-----
+hoge|fuga
+
+(1 rows)
+    </code></pre>
+    <h4>concat関数を用いた場合</h4>
+    <pre><code>
+SELECT concat(c, v) FROM example;
+    </code></pre>
+    <h4>結果</h4>
+    <pre><code>
+  concat
+----------
+<m-b>hoge    fuga</m-b>
+
+(1 rows)
+    </code></pre>
+    <h4>||演算子を用いた場合</h4>
+    <pre><code>
+SELECT c || v FROM example;
+    </code></pre>
+    <h4>結果</h4>
+    <pre><code>
+  concat
+----------
+<m-b>hogefuga</m-b>
+
+(1 rows)
+    </code></pre>
+
+    <h3>数値型</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>型名</th>
+                <th><nobr>格納サイズ</nobr><br>(バイト)</th>
+                <th>説明</th>
+                <th>範囲</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>smallint</m-b></td>
+                <td><m-b>2</m-b></td>
+                <td>整数データ型</td>
+                <td>-32768~32767</td>
+            </tr>
+            <tr>
+                <td><m-b>integer</m-b></td>
+                <td><m-b>4</m-b></td>
+                <td>整数データ型</td>
+                <td>-2147483648~2147483647</td>
+            </tr>
+            <tr>
+                <td><m-b>bigint</m-b></td>
+                <td><m-b>8</m-b></td>
+                <td>整数データ型</td>
+                <td>-9223372036854775808~9223372036854775807</td>
+            </tr>
+            <tr>
+                <td><m-b>decimal</m-b></td>
+                <td>可変長</td>
+                <td>正確な精度を保持する(小数も指定可)</td>
+                <td>整数部は131072桁まで、小数部は16383桁まで</td>
+            </tr>
+            <tr>
+                <td><m-b>numeric</m-b></td>
+                <td>可変長</td>
+                <td>正確な精度を保持する(小数も指定可)</td>
+                <td>整数部は131072桁まで、小数部は16383桁まで</td>
+            </tr>
+            <tr>
+                <td><m-b>real</m-b></td>
+                <td><m-b>4</m-b></td>
+                <td colspan="2">
+                    <m-b>6</m-b>桁の精度を持つ不正確なデータ型(小数も指定可)<br>
+                    IEEE規格754の形式で格納する。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>double precision</m-b></td>
+                <td><m-b>8</m-b></td>
+                <td colspan="2">
+                    <m-b>15</m-b>桁の精度を持つ不正確なデータ型(小数も指定可)<br>
+                    IEEE規格754の形式で格納する。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>smallserial</m-b></td>
+                <td><m-b>2</m-b></td>
+                <td rowspan="3" colspan="2">
+                    連番型<br>
+                    内部にシーケンスを作成し、デフォルト値としてシーケンスから払い出された値を設定する。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>serial</m-b></td>
+                <td><m-b>4</m-b></td>
+            </tr>
+            <tr>
+                <td><m-b>bigserial</m-b></td>
+                <td><m-b>8</m-b></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>日付/時刻データ型</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>型名</th>
+                <th><nobr>格納サイズ</nobr><br>(バイト)</th>
+                <th>説明</th>
+                <th>範囲</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>timestamp [without timezone]</m-b></td>
+                <td><m-b>8</m-b></td>
+                <td>日付と時刻を保持する<br>(タイムゾーンなし)</td>
+                <td>紀元前4713年~西暦294276年</td>
+            </tr>
+            <tr>
+                <td><m-b>timestamp with time zone</m-b></td>
+                <td><m-b>8</m-b></td>
+                <td>日付と時刻を保持する<br>(タイムゾーンあり)</td>
+                <td>紀元前4713年~西暦294276年</td>
+            </tr>
+            <tr>
+                <td><m-b>date</m-b></td>
+                <td><m-b>4</m-b></td>
+                <td>日付を保持する</td>
+                <td>紀元前4713年~西暦5874897年</td>
+            </tr>
+            <tr>
+                <td><m-b>time [without timezone]</m-b></td>
+                <td><m-b>8</m-b></td>
+                <td>時刻を保持する</td>
+                <td>00:00:00~24:00:00</td>
+            </tr>
+            <tr>
+                <td><m-b>time with time zone</m-b></td>
+                <td><m-b>12</m-b></td>
+                <td>時刻を保持する</td>
+                <td>00:00:00+1459~24:00:00-1459</td>
+            </tr>
+            <tr>
+                <td><m-b>interval [fields]</m-b></td>
+                <td><m-b>16</m-b></td>
+                <td>時間間隔を保持する</td>
+                <td>-178000000年~178000000年</td>
+            </tr>
+        </tbody>
+    </table>
 
     <script src="./asset/script.js"></script>
 </body>
