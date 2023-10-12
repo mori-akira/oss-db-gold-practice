@@ -17,58 +17,79 @@ h2 {
     position: relative;
     margin: 3em 2.5rem 0;
     padding: 0 1rem;
-    border-bottom: 2px solid #333;
+    border-bottom: 5px double #333;
 }
 
-h2::before {
-    display: inline-block;
-    position: absolute;
-    top: calc(50% - 9px);
-    left: 8px;
-    width: 14px;
-    height: 14px;
-    transform: translateX(-2.5rem) translateY(4px);
-    margin-right: 1rem;
-    content: '';
-    border: 2px solid #006633;
-    background-color: #00FF0033;
-}
-
+h2::before,
 h2::after {
     display: inline-block;
     position: absolute;
     top: calc(50% - 9px);
-    left: 0;
     width: 14px;
     height: 14px;
-    transform: translateX(-2.5rem) translateY(-4px);
     margin-right: 1rem;
     content: '';
-    border: 2px solid #006633;
-    background-color: #00FF0033;
+    border: 2px solid #333;
+}
+
+h2::before {
+    left: 8px;
+    transform: translateX(-2.5rem) translateY(4px);
+    background-color: #FF000033;
+}
+
+h2::after {
+    left: 0;
+    transform: translateX(-2.5rem) translateY(-4px);
+    background-color: #00FFFF22;
 }
 
 h3 {
     border-bottom: 1px solid #333;
+    margin-top: 2rem;
 }
 
 h3::before {
-    content: '◇';
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
     margin-right: .5rem;
+    border: 1px solid #333;
+    background-color: #00000022;
+    transform: rotate(45deg);
 }
 
-table > thead th {
+table>thead th {
     padding: .3rem 1rem;
     color: #fff;
     background-color: #333;
 }
 
-table > tbody td {
+table>tbody td {
     padding: .3rem 1rem;
     border-bottom: 1px solid black;
 }
 
-mask-block {
+table>tbody td:not(:last-of-type) {
+    white-space: nowrap;
+}
+
+p {
+    padding: 1rem;
+    border-radius: 1rem;
+    background-color: #EEEEEE;
+}
+
+pre {
+    padding: 0 1rem;
+    font-size: 1rem;
+    background-color: #EEEEEE;
+    border-left: 4px solid #333;
+}
+
+mask-block,
+m-b {
     display: inline-block;
     padding: .1rem .5rem;
     color: #338;
@@ -77,6 +98,13 @@ mask-block {
     cursor: pointer;
 }
 
-mask-block.clicked {
+mask-block.clicked,
+m-b.clicked {
     background-color: #CCF;
+}
+
+mask-block:not(.clicked)::selection,
+m-b:not(.clicked)::selection {
+    color: transparent;
+    background-color: transparent;
 }

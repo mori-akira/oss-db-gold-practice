@@ -6,6 +6,7 @@
     <title>OSS-DB Gold Practice</title>
     <meta name="author" content="Moriaki Kogure">
     <link rel="stylesheet" href="./asset/style.css">
+    <link rel="icon" href="./asset/favicon.ico">
 </head>
 
 <body>
@@ -266,6 +267,554 @@
             </tr>
         </tbody>
     </table>
+
+    <h3>設定ファイルで設定できる型</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>型名</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>論理型(boolean)</m-b></td>
+                <td>
+                    真偽値<br>
+                    <m-b>on/off</m-b>、<m-b>true/false</m-b>、<m-b>yes/no</m-b>、<m-b>1/0</m-b>を指定できる。<br>
+                    大文字と小文字を区別しない。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>浮動小数点型(floating point)</m-b></td>
+                <td>小数点を含む数値</td>
+            </tr>
+            <tr>
+                <td><m-b>整数型(integer)</m-b></td>
+                <td>
+                    小数点を含まない数値<br>
+                    PostgreSQL12以降は、整数型の項目にも小数値を指定できる。その場合、最も近い整数値に丸められる。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>文字型(string)</m-b></td>
+                <td>
+                    任意の文字列<br>
+                    空白を含む場合は<m-b>単一引用符</m-b>で囲む必要がある。(含まない場合は囲む必要はない)<br>
+                    値に単一引用符を含む場合は、<m-b>二重引用符</m-b>または<m-b>逆引用符</m-b>で囲む。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>列挙型(enum)</m-b></td>
+                <td>限定された値の集合</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>単位を指定する文字</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>指定対象</th>
+                <th>指定する文字</th>
+                <th>意味</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="5">メモリ</td>
+                <td><m-b>B</m-b></td>
+                <td>バイト</td>
+            </tr>
+            <tr>
+                <td><m-b>kB</m-b></td>
+                <td>キロバイト</td>
+            </tr>
+            <tr>
+                <td><m-b>MB</m-b></td>
+                <td>メガバイト</td>
+            </tr>
+            <tr>
+                <td><m-b>GB</m-b></td>
+                <td>ギガバイト</td>
+            </tr>
+            <tr>
+                <td><m-b>TB</m-b></td>
+                <td>テラバイト</td>
+            </tr>
+            <tr>
+                <td rowspan="5">時間</td>
+                <td><m-b>ms</m-b></td>
+                <td>ミリ秒</td>
+            </tr>
+            <tr>
+                <td><m-b>s</m-b></td>
+                <td>秒</td>
+            </tr>
+            <tr>
+                <td><m-b>min</m-b></td>
+                <td>分</td>
+            </tr>
+            <tr>
+                <td><m-b>h</m-b></td>
+                <td>時間</td>
+            </tr>
+            <tr>
+                <td><m-b>d</m-b></td>
+                <td>日</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>pg_hba.confの接続方式に指定できるキーワード</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>キーワード</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>local</m-b></td>
+                <td>Unixドメインソケットを使用する接続方式</td>
+            </tr>
+            <tr>
+                <td><m-b>host</m-b></td>
+                <td>
+                    TCP/IPを利用した接続方式<br>
+                    SSL通信の有無は問わない。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>hostssl</m-b></td>
+                <td>SSLを用いた通信方式</td>
+            </tr>
+            <tr>
+                <td><m-b>hostnossl</m-b></td>
+                <td>SSLを用いない通信方式</td>
+            </tr>
+            <tr>
+                <td><m-b>hostgssenc</m-b></td>
+                <td>TCP/IPを使用し、かつGSSAPI通信を使用した接続方式</td>
+            </tr>
+            <tr>
+                <td><m-b>hostnogssenc</m-b></td>
+                <td>TCP/IPを使用し、かつGSSAPI通信を使用しない接続方式</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>pg_hba.confの接続データベースに指定できるキーワード</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>キーワード</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>all</m-b></td>
+                <td>すべてのデータベースへの接続に対応する</td>
+            </tr>
+            <tr>
+                <td><m-b>sameuser</m-b></td>
+                <td>指定したユーザと同名のデータベースへの接続に対応する</td>
+            </tr>
+            <tr>
+                <td><m-b>samerole</m-b></td>
+                <td>指定したユーザが所属するロールと同名のデータベースへの接続に対応する</td>
+            </tr>
+            <tr>
+                <td><m-b>replication</m-b></td>
+                <td>レプリケーション接続に対応する</td>
+            </tr>
+            <tr>
+                <td><m-b>@ファイルパス</m-b></td>
+                <td>
+                    データベース名を含むファイルを指定する<br>
+                    pg_hba.confファイルが存在するディレクトリからの相対パス、または絶対パスで指定する。
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>特殊な名前のデータベース名/ユーザ名について</h3>
+    <p>
+        PostgreSQLでは、データベース名やユーザ名に<code>all</code>などの予約語を指定することを禁止していない。
+        予約語のデータベース名/ユーザ名が存在する場合も、設定ファイルに予約語を指定した場合の挙動は変わらない。
+        設定ファイルで予約語のデータベース名/ユーザ名を指定する場合、<m-b>二重引用符</m-b>を用いることができる。
+    </p>
+
+    <h3>pg_hba.confの認証方式に指定できるキーワード</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>種別</th>
+                <th>キーワード</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="2">無条件</td>
+                <td><m-b>trust</m-b></td>
+                <td>接続を無条件で許可する</td>
+            </tr>
+            <tr>
+                <td><m-b>reject</m-b></td>
+                <td>接続を無条件で拒否する</td>
+            </tr>
+            <tr>
+                <td rowspan="3">パスワード認証</td>
+                <td><m-b>md5</m-b></td>
+                <td>
+                    md5暗号化によるパスワード認証を行う<br>
+                    主に、scram-sha-256による暗号化が使用できない環境で使用する。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>password</m-b></td>
+                <td>
+                    平文によるパスワード認証を行う<br>
+                    非推奨
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>scram-sha-256</m-b></td>
+                <td>
+                    scram-sha-256暗号化によるパスワード認証を行う<br>
+                    パスワード認証方式で推奨される認証方式
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>GSSAPI認証</m-b></td>
+                <td><m-b>gss</m-b></td>
+                <td>
+                    GSSAPIによる認証を行う<br>
+                    <m-b>Linux</m-b>環境かつTCP/IP接続でのみ使用できる。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>SSPI認証</m-b></td>
+                <td><m-b>sspi</m-b></td>
+                <td>
+                    sspiによる認証を行う<br>
+                    <m-b>Windows</m-b>環境でのみ使用できる。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>Ident認証</m-b></td>
+                <td><m-b>ident</m-b></td>
+                <td>
+                    クライアントOSの<m-b>ユーザ名</m-b>をidentサーバから入手してデータベース接続ユーザ名として使用する
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>Peer認証</m-b></td>
+                <td><m-b>peer</m-b></td>
+                <td>
+                    OSの<m-b>ユーザ名</m-b>をカーネルから入手してデータベース接続ユーザ名として使用する
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>LDAP認証</m-b></td>
+                <td><m-b>ldap</m-b></td>
+                <td>
+                    パスワード認証のためにLDAPサーバを使用する
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>RADIUS認証</m-b></td>
+                <td><m-b>radius</m-b></td>
+                <td>
+                    パスワード認証のためにRADIUSサーバを使用する
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>証明書認証</m-b></td>
+                <td><m-b>cert</m-b></td>
+                <td>
+                    SSLクライアント証明書を使った認証を行う
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>PAM認証</m-b></td>
+                <td><m-b>pam</m-b></td>
+                <td>
+                    パスワード認証のためにPAMを使用する
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>BSD認証</m-b></td>
+                <td><m-b>bsd</m-b></td>
+                <td>
+                    OSによって提供されたBSD認証サービスを使用する
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>pg_ident.confの使い方</h3>
+    <p>
+        マッピング名を<code>foo_ident</code>、OSユーザ名を<code>foo</code>、マッピングするデータベース名を<code>user1</code>とするとき、
+        pg_ident.confは次のように記述する。
+    </p>
+    <pre><code>
+# map-name system-user-name database-user-name
+<m-b>foo_ident</m-b> <m-b>foo</m-b> <m-b>user1</m-b>
+    </code></pre>
+    <p>また、ident認証で上記のマッピングを使用する場合、pg_hba.confには次のように記述する。</p>
+    <pre><code>
+# TYPE DATABASE USER METHOD
+host all all 192.168.10.0/24 <m-b>ident map=foo_indent</m-b>
+    </code></pre>
+
+    <h2>4章 処理/制御の基本</h2>
+
+    <h3>問い合わせ処理の流れ</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>処理名</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>パーサ</m-b></td>
+                <td>
+                    問い合わせのはじめに、字句解析と構文解析を行う処理<br>
+                    字句解析では、OSSである<m-b>flex</m-b>を用いて処理を行い、
+                    <m-b>./backend/parser/scan.l</m-b>というファイルにルールを定義する。<br>
+                    構文解析では、OSSである<m-b>bison</m-b>を用いて処理を行い、
+                    <m-b>./backend/parser/gram.y</m-b>というファイルにルールを定義する。<br>
+                    字句解析と構文解析に成功した場合、<m-b>問い合わせツリー</m-b>という構造を生成し、次の処理へと渡す。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>リライタ</m-b></td>
+                <td>
+                    SQLを実行するデータベースにルールが定義されている場合に、そのルールを参照して問い合わせツリーを書き換える処理<br>
+                    PostgreSQLのビューは、このルールを用いて実現されている。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>プランナ/オプティマイザ</m-b></td>
+                <td>問い合わせツリーをもとに最適な実行計画を生成する処理</td>
+            </tr>
+            <tr>
+                <td><m-b>エグゼキュータ</m-b></td>
+                <td>実行計画に従って必要な行の集合を抽出する処理</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>トランザクションの特性</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>特性</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>原子性(Atomicity)</m-b></td>
+                <td>処理の最小単位を定義し、それらの処理がすべて実行されたか、まったく実行されないかのどちらかの結果となること</td>
+            </tr>
+            <tr>
+                <td><m-b>一貫性(Consistency)</m-b></td>
+                <td>トランザクションの開始及び終了時点で、業務として規定された整合性を満たすこと</td>
+            </tr>
+            <tr>
+                <td><m-b>独立性(Isolation)</m-b></td>
+                <td>作業中のトランザクションによる更新は、確定するまで他のトランザクションから不可視となること</td>
+            </tr>
+            <tr>
+                <td><m-b>永続性(Durability)</m-b></td>
+                <td>確定したトランザクションの結果は永続的に保存されること</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>トランザクション分離レベル</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>分離レベル</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>READ UNCOMMITED</m-b></td>
+                <td>
+                    別トランザクションのコミットされていないデータが参照される可能性がある<br>
+                    PostgreSQLにおいてはこの実装は存在せず、指定しても<m-b>READ COMMITED</m-b>として扱われる。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>READ COMMITED</m-b></td>
+                <td>
+                    問い合わせを実行する直前までにコミットされたデータのみを参照する<br>
+                    PostgreSQLにおいては、デフォルトの分離レベルとなる。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>REPEATABLE READ</m-b></td>
+                <td>トランザクションが開始する直前までにコミットされたデータのみを参照する</td>
+            </tr>
+            <tr>
+                <td><m-b>SERIALIZABLE</m-b></td>
+                <td>並列実行された複数のトランザクションの実行であっても、逐次的に扱われたものと同じ結果を要求する</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>分離レベルが不十分な場合に起きる事象</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>事象</th>
+                <th>抑止できる分離レベル</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>ダーティリード</m-b></td>
+                <td><m-b>READ COMMITED</m-b></td>
+                <td>
+                    同時に実行されている他のトランザクションが書き込んだ、コミット前のデータを読み込んでしまうこと
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>反復不能読み取り</m-b></td>
+                <td><m-b>REPEATABLE READ</m-b></td>
+                <td>
+                    同一トランザクション内で複数回読み取りを行い、その結果が別トランザクションの更新の影響で変わってしまうこと
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>ファントムリード</m-b></td>
+                <td><m-b>SERIALIZABLE</m-b></td>
+                <td>
+                    同一トランザクション内で複数回読み取りを行い、その結果が別トランザクションの挿入の影響で変わってしまうこと
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>ロックモード一覧</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>ロックモード</th>
+                <th>獲得タイミング</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>ACCESS SHARE</m-b></td>
+                <td>
+                    <ul>
+                        <li>SELECT</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>ROW SHARE</m-b></td>
+                <td>
+                    <ul>
+                        <li>SELECT FOR UPDATE</li>
+                        <li>SELECT FOR SHARE</li>
+                        <li>SELECT FOR NO KEY UPDATE</li>
+                        <li>SELECT FOR KEY SHARE</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>ROW EXCLUSIVE</m-b></td>
+                <td>
+                    <ul>
+                        <li>INSERT</li>
+                        <li>UPDATE</li>
+                        <li>DELETE</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>SHARE UPDATE EXCLUSIVE</m-b></td>
+                <td>
+                    <ul>
+                        <li>VACUUM</li>
+                        <li>ANALYZE</li>
+                        <li>CREATE INDEX CONCURRENTLY</li>
+                        <li>ALTER TABLE(SET STATISTICS)</li>
+                        <li>SET(attr = value)</li>
+                        <li>RESET(attr = value)</li>
+                        <li>VALIDATE CONSTRAINT</li>
+                        <li>CLUSTER ON</li>
+                        <li>SET WITHOUT CLUSTER</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>SHARE</m-b></td>
+                <td>
+                    <ul>
+                        <li>CREATE INDEX</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>SHARE ROW EXCLUSIVE</m-b></td>
+                <td>
+                    同一セッション内での競合を防ぐためのロックモード<br>
+                    明示的にこのロックモードを獲得するコマンドはない。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>EXCLUSIVE</m-b></td>
+                <td>
+                    明示的にこのロックモードを獲得するコマンドはない。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>ACCESS EXCLUSIVE</m-b></td>
+                <td>
+                    <ul>
+                        <li>ALTER TABLE</li>
+                        <li>DROP TABLE</li>
+                        <li>TRUNCATE</li>
+                        <li>REINDEX</li>
+                        <li>CLUSTER</li>
+                        <li>VACUUM FULL</li>
+                        <li>LOCK TABLE</li>
+                    </ul>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h3>同時実行制御</h3>
+    <p>
+        PostgreSQLでは、<m-b>追記型アーキテクチャ</m-b>というアーキテクチャを採用することで、
+        <m-b>MVCC(Multi Version Concurrency Control)</m-b>と呼ばれる同時実行制御を実現している。
+        追記型アーキテクチャとは、データ更新時にデータを直接書き換えるのではなく、
+        トランザクションごとに発行されるID(<m-b>XID</m-b>)をテーブルの各行に保持することで、
+        トランザクションごとのデータを保持する仕組みである。<br>
+        追記型アーキテクチャの仕様上、不要となるレコードが発生するが、これを整理する処理が<m-b>バキューム</m-b>であり、
+        更新前の古いレコードを<m-b>空き領域マップ</m-b>に記録することで、再利用可能とする。<br>
+        以前のPostgreSQLではこのバキューム処理の運用が重要な課題となっていたが、PostgreSQL8.3で採用された<m-b>HOT(Heap Only Tuple)</m-b>や、
+        自動バキューム機能の強化により、バキューム処理を意識する必要がなくなった。
+    </p>
+
+    <h2>5章 テーブル設計</h2>
+
+
 
     <script src="./asset/script.js"></script>
 </body>
