@@ -61,6 +61,11 @@ h3::before {
     transform: rotate(45deg);
 }
 
+details > ul {
+    margin: .5rem 0;
+    list-style: none;
+}
+
 table>thead th {
     padding: .3rem 1rem;
     color: #fff;
