@@ -1173,6 +1173,168 @@ SELECT c || v FROM example;
     </p>
 
     <h3>生成列について</h3>
+    <p>
+        生成列はPostgreSQL12から追加された機能で、他の列を用いて計算した値をデフォルト値として設定できる。
+        例えば、以下のようにScoreの合計列totalを定義することができる。
+    </p>
+    <pre><code>
+CREATE TABLE score(
+    student_id bigint UNIQUE,
+    japanese integer DEFAULT 0,
+    math integer DEFAULT 0,
+    english integer DEFAULT 0,
+    total integer <m-b>GENERATED ALWAYS AS</m-b> (japanese + math + english) <m-b>STORED</m-b>
+)
+    </code></pre>
+    <p>
+        生成列に値を指定することはできないが、キーワード<m-b>DEFAULT</m-b>を指定することができ、生成列の定義に則った値の計算が行われる。<br>
+        生成列は、次の制約が存在する。
+    </p>
+    <ul>
+        <li>生成列は不変関数のみを使用でき、副問い合わせや現在のレコード以外への参照は使用できない</li>
+        <li>生成列は他の生成列を参照できない</li>
+        <li>生成列は<m-b>tableoid</m-b>以外のシステム列を参照できない</li>
+    </ul>
+
+    <h3>TOASTを意識したテーブル設計</h3>
+    <p>
+        TOASTとは、<m-b>The Oversized-Attribute Storage Technique</m-b>の略で、<m-b>過大属性格納技法</m-b>の意である。
+        大きな列の値を格納する際の実装技法である。<br>
+        TOAST化は、行のサイズが<m-b>2kB</m-b>を超えるときに実行され、TOASTと呼ばれる特殊領域にデータを配置し、テーブルブロックではその参照情報を持つ。
+        TOAST化の処理では、行サイズが<m-b>2kB</m-b>より小さくなるまで個々の列の値を圧縮し、別領域に移動しようとする。
+        TOASTの格納方法は次の4種類があり、データタイプごとにデフォルトが決められている。
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>格納方法</th>
+                <th>対応する主なデータ型</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>PLAIN</m-b></td>
+                <td>
+                    <ul>
+                        <li><m-b>INTEGER</m-b></li>
+                        <li><m-b>FLOAT</m-b></li>
+                        <li><m-b>DOUBLE PRECISION</m-b></li>
+                        <li><m-b>DATE</m-b></li>
+                        <li><m-b>TIMESTAMP</m-b></li>
+                    </ul>
+                </td>
+                <td>
+                    圧縮や行外への格納を行わない<br>
+                    固定長データ型など、TOAST不可能なデータ型に適用する。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>EXTENDED</m-b></td>
+                <td>
+                    <ul>
+                        <li><m-b>CHAR(n)</m-b></li>
+                        <li><m-b>VARCHAR(n)</m-b></li>
+                        <li><m-b>TEXT</m-b></li>
+                        <li><m-b>BYTEA</m-b></li>
+                        <li><m-b>JSON/JSONB</m-b></li>
+                    </ul>
+                </td>
+                <td>
+                    圧縮と行外の格納を行う<br>
+                    ほとんどのTOAST可能なデータ型のデフォルトはこの方法である。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>EXTERNAL</m-b></td>
+                <td></td>
+                <td>
+                    非圧縮の行外格納を行う<br>
+                    TEXTとBYTEAに対して設定すると、格納領域が増加する代わりに列全体に対する部分文字列操作が高速化される。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>MAIN</m-b></td>
+                <td>
+                    <ul>
+                        <li><m-b>NUMERIC</m-b></li>
+                    </ul>
+                </td>
+                <td>圧縮を行うが、行外の格納は極力行わない</td>
+            </tr>
+        </tbody>
+    </table>
+    <p>
+        テーブル作成後に格納方法を指定する場合、次のコマンドを実行すればよい。
+    </p>
+    <pre><code>
+ALTER TALBE テーブル名 ALTER 列名 <m-b>SET STORAGE 格納方法</m-b>
+    </code></pre>
+
+    <h3>遺伝的問い合わせ最適化</h3>
+    <p>
+        PostgreSQLのプランナでは、結合方式の最適化のために実行計画を総当たりで評価する。
+        このため、テーブルの結合数が増加すると、指数関数的に最適化処理のコストが増加する。<br>
+        このため、クエリ内で扱うテーブル数が一定の閾値(通常は<m-b>12</m-b>)を超過すると、<m-b>遺伝的問い合わせ最適化</m-b>という手法で
+        実行計画を生成するようになる。
+    </p>
+    <blockquote>
+        <a href="https://www.postgresql.jp/document/8.1/html/geqo-pg-intro.html" target="_blank">
+            47.3. PostgreSQLの遺伝的問い合わせ最適化（GEQO）
+        </a>
+    </blockquote>
+
+    <h2>その他の調査内容</h2>
+
+    <h3>関数の変動性分類</h3>
+    <p>
+        すべての関数は変動性区分を持ち、CREATE FUNCTIONコマンドで指定することができる。
+        変動性に関する分類は、オプティマイザによる処理の最適化に影響する。<br>
+        変動性の区分は次のものがある。
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>区分</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>VOLATILE</m-b></td>
+                <td>
+                    データベースの変更を含む、すべてを行うことができる。
+                    また、同一引数で呼び出したとしても異なる結果を返すことがある。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>STABLE</m-b></td>
+                <td>
+                    データベースを変更することができない。
+                    また、単一の文内ですべての行に対して同一の引数を渡した場合に同一の結果を返すことが保証される。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>IMMUTABLE</m-b></td>
+                <td>
+                    データベースを変更することができない。
+                    また、同一引数に対する呼び出しは常に同一の結果となる。
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <blockquote>
+        <a href="https://www.postgresql.jp/docs/9.2/xfunc-volatility.html" target="_blank">
+            35.6. 関数の変動性分類
+        </a>
+    </blockquote>
+
+    <h3>テーブルサイズの取得</h3>
+    <p>
+        テーブルサイズ(テーブルで使用されるディスク領域)を取得するシステム管理関数は、<m-b>pg_relation_size</m-b>である。
+        テーブル名またはテーブルの<m-b>oid</m-b>を引数に渡す。<br>
+        ビューを引数に指定した場合、結果は<m-b>0</m-b>となる。
+    </p>
 
     <script src="./asset/script.js"></script>
 </body>
