@@ -98,7 +98,7 @@ pre {
 mask-block,
 m-b {
     display: inline-block;
-    margin: .1rem 0;
+    margin: .1rem .05rem;
     padding: .1rem .5rem;
     color: #338;
     background-color: #338;
