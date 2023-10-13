@@ -1287,6 +1287,87 @@ ALTER TALBE テーブル名 ALTER 列名 <m-b>SET STORAGE 格納方法</m-b>
         </a>
     </blockquote>
 
+    <h3>宣言的パーティショニング</h3>
+    <h4>メリット</h4>
+    <p>
+        宣言的パーティショニングを用いるメリットは、次のようなものがある。
+    </p>
+    <ul>
+        <li>物理的な分割によってデータアクセスの範囲を絞り込めるため、特定条件下でI/O負荷を低減し参照性能の改善が見込める。</li>
+        <li>パーティションのDROP/TRUNCATEによって一括削除ができるため、特定条件のDELETEよりも処理時間やマシンリソース消費を抑えることができる。</li>
+    </ul>
+    <h4>分割方式</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>分割方式</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>範囲パーティショニング</m-b></td>
+                <td>
+                    パーティションキーの範囲に基づいて振り分けを行う方式<br>
+                    パーティションキーに指定できる型は<m-b>B-tree</m-b>演算子クラスを持つ型である。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>リストパーティショニング</m-b></td>
+                <td>
+                    パーティションキーが事前に列挙されたリストに基づいて振り分けを行う方式<br>
+                    パーティションキーに指定できる型は<m-b>B-tree</m-b>演算子クラスを持つ型である。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>範囲パーティショニング</m-b></td>
+                <td>
+                    パーティションキーに対しハッシュ値を計算しその余りで振り分けを行うことで、ほぼ均等な振り分けを行う方式<br>
+                    パーティションキーに指定できる型は<m-b>ハッシュ</m-b>演算子クラスを持つ型である。
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <h4>範囲パーティションニングでパーティションテーブルとパーティションを作成</h4>
+    <pre><code>
+/* logdateカラムをパーティションキーに指定し、パーティションテーブル作成 */
+CREATE TABLE log (
+    id bigserial PRIMARY KEY,
+    kind text NOT NULL,
+    logdate date NOT NULL
+) <m-b>PARTITION BY RANGE (logdate)</m-b>;
+
+/* 月ごとの範囲パーティションを作成 */
+CREATE TABLE log_202206 <m-b>PARTITION OF log FOR VALUES FROM ('2022-06-01') TO ('2022-07-01')</m-b>;
+CREATE TABLE log_202207 <m-b>PARTITION OF log FOR VALUES FROM ('2022-07-01') TO ('2022-08-01')</m-b>;
+    </code></pre>
+    <h4>リストパーティションニングでパーティションテーブルとパーティションを作成</h4>
+    <pre><code>
+/* kindカラムをパーティションキーに指定し、パーティションテーブル作成 */
+CREATE TABLE log (
+    id bigserial PRIMARY KEY,
+    kind text NOT NULL,
+    logdate date NOT NULL
+) <m-b>PARTITION BY LIST (kind)</m-b>;
+
+/* 種別ごとのリストパーティションを作成 */
+CREATE TABLE log_app <m-b>PARTITION OF log FOR VALUES IN ('app')</m-b>;
+CREATE TABLE log_error <m-b>PARTITION OF log FOR VALUES IN ('error')</m-b>;
+    </code></pre>
+    <h4>ハッシュパーティションニングでパーティションテーブルとパーティションを作成</h4>
+    <pre><code>
+/* idカラムをパーティションキーに指定し、パーティションテーブル作成 */
+CREATE TABLE log (
+    id bigserial PRIMARY KEY,
+    kind text NOT NULL,
+    logdate date NOT NULL
+) <m-b>PARTITION BY HASH (id)</m-b>;
+
+/* idのハッシュ値で均等にパーティションを作成 */
+CREATE TABLE log_1 <m-b>PARTITION OF log FOR VALUES WITH (MODULUS 2, REMAINDER 0)</m-b>;
+CREATE TABLE log_2 <m-b>PARTITION OF log FOR VALUES WITH (MODULUS 2, REMAINDER 1)</m-b>;
+    </code></pre>
+
     <h2>その他調査まとめ</h2>
 
     <h3>関数の変動性分類</h3>
