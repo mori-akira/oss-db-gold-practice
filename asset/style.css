@@ -81,6 +81,12 @@ p {
     background-color: #EEEEEE;
 }
 
+blockquote {
+    margin: 1rem;
+    padding: 0 1rem;
+    border-left: 4px solid #bbb;
+}
+
 pre {
     padding: 0 1rem;
     font-size: 1rem;
