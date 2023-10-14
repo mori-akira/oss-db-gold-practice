@@ -81,6 +81,11 @@ table>tbody td:not(:last-of-type) {
     white-space: nowrap;
 }
 
+ul.no-style {
+    padding-left: .5rem;
+    list-style-type: none;
+}
+
 p {
     padding: 1rem;
     border-radius: 1rem;
