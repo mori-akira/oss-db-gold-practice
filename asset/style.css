@@ -96,6 +96,10 @@ table>tbody td.wrappable {
     white-space: normal !important;
 }
 
+table>tbody td.no-wrappable {
+    white-space: nowrap !important;
+}
+
 ul.no-style {
     padding-left: .5rem;
     list-style-type: none;
