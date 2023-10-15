@@ -21,7 +21,7 @@ h1 {
 }
 
 h2 {
-    display: inline-block;
+    display: block;
     position: relative;
     margin: 3em 2.5rem 0;
     padding: 0 1rem;
@@ -71,6 +71,10 @@ h3::before {
 details>ul {
     margin: .5rem 0;
     list-style: none;
+}
+
+table {
+    font-size: 1rem;
 }
 
 table>thead th {
