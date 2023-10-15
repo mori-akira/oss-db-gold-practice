@@ -2221,6 +2221,129 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         </tbody>
     </table>
 
+    <h2>8章 バックアップ計画</h2>
+
+    <h3>リカバリ要件</h3>
+    <p>
+        バックアップ計画を立てる際は、最初にリカバリ要件を明確にする。
+        具体的には、次のようなことを決定する。
+    </p>
+    <ul>
+        <li>障害発生時に<m-b>どの時点までのデータ</m-b>を復旧するか</li>
+        <li>データベースの再開までに<m-b>許容される時間</m-b>はどの程度か</li>
+    </ul>
+
+    <h3>バックアップ方式</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>バックアップの種類</th>
+                <th>バックアップ方式</th>
+                <th>長所</th>
+                <th>短所</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>オフラインバックアップ</m-b></td>
+                <td><m-b>物理バックアップ</m-b></td>
+                <td class="wrappable">
+                    <ul>
+                        <li>手順が簡易である</li>
+                    </ul>
+                </td>
+                <td>
+                    <ul>
+                        <li>運用中にバックアップできない</li>
+                        <li>復元できる時点はバックアップ取得時点のみ</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td rowspan="2"><m-b>オンラインバックアップ</m-b></td>
+                <td><m-b>論理バックアップ</m-b></td>
+                <td class="wrappable">
+                    <ul>
+                        <li>運用中にバックアップができる</li>
+                        <li>手順が簡易である</li>
+                        <li>データベースから部分的にバックアップできる</li>
+                    </ul>
+                </td>
+                <td>
+                    <ul>
+                        <li>復元できる時点はバックアップ取得時点のみ</li>
+                        <li>物理バックアップに比べて復元にかかる時間が長い</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>物理バックアップ</m-b></td>
+                <td class="wrappable">
+                    <ul>
+                        <li>運用中にバックアップできる</li>
+                        <li>任意の時点にリカバリできる</li>
+                    </ul>
+                </td>
+                <td>
+                    <ul>
+                        <li>運用手順が煩雑である</li>
+                    </ul>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <h4>オンラインバックアップの手法</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>方式</th>
+                <th>バックアップ手法</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>論理バックアップ</td>
+                <td>
+                    <ul>
+                        <li><m-b>pg_dumpコマンド</m-b></li>
+                        <li><m-b>pg_dumpallコマンド</m-b></li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td>物理バックアップ</td>
+                <td>
+                    <ul>
+                        <li><m-b>pg_basebackupコマンド</m-b></li>
+                        <li><m-b>pg_start_bakup、pg_stop_backupコマンド</m-b></li>
+                    </ul>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <h4>リカバリ要件とリカバリ方式の整理</h4>
+    <ul>
+        <li>
+            バックアップ取得時点まで戻したい<br>
+            <ul>
+                <li>
+                    PostgreSQLを停止してもよい<br>
+                    ⇒<m-b>コールドバックアップ</m-b>
+                </li>
+                <li>
+                    PostgreSQLの動作継続が必要<br>
+                    ⇒<m-b>オンライン論理バックアップ</m-b>
+                </li>
+            </ul>
+        </li>
+        <li>
+            問題発生直前まで戻したい<br>
+            ⇒<m-b>オンライン物理バックアップ</m-b>
+        </li>
+    </ul>
+
+    <h3>各バックアップ方式の注意点</h3>
+
     <h2>その他調査まとめ</h2>
 
     <h3>関数の変動性分類</h3>

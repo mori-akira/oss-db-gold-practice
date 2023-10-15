@@ -1,7 +1,6 @@
 body {
     margin: 1rem auto;
     padding: 0 .5rem;
-    width: 100dvw;
     max-width: 64rem;
 }
 
@@ -80,6 +79,10 @@ table>tbody td {
 
 table>tbody td:not(:last-of-type) {
     white-space: nowrap;
+}
+
+table>tbody td.wrappable {
+    white-space: normal !important;
 }
 
 ul.no-style {
