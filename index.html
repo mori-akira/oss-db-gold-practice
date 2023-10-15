@@ -1848,7 +1848,9 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
     <table>
         <thead>
             <tr>
-                <th><nobr>インデックス種別</nobr></th>
+                <th>
+                    <nobr>インデックス種別</nobr>
+                </th>
                 <th>説明</th>
             </tr>
         </thead>
@@ -1974,6 +1976,249 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         <li><m-b>認証</m-b>:データベースへの接続を制御</li>
         <li><m-b>認可</m-b>:データベースオブジェクトの操作を制御</li>
     </ul>
+
+    <h3>ユーザとロールの違い</h3>
+    <p>
+        PostgreSQLにおいては、内部的にユーザとロールは同じものとして実装されている。
+        一方、CREATE USERとCREATE ROLEの違いは、内部的に<m-b>CREATE USER</m-b>を呼び出したときは<m-b>CREATE ROLE</m-b>が呼び出されていて、
+        CREATE USERを呼び出したときは<m-b>LOGIN</m-b>オプションが、CREATE ROLEを呼び出したときは<m-b>NOLOGIN</m-b>オプションが付与されて
+        呼び出される。
+    </p>
+
+    <h3>PUBLICロール</h3>
+    <p>
+        PUBLICロールは、デフォルトで存在し、削除できないロールである。
+        すべてのロールはPUBLICロールを<m-b>継承</m-b>する。
+        そのため、PUBLICロールが持つ権限はすべてのロールが持つことになるため注意が必要である。<br>
+        PUBLICロールはロール名が表示されない。
+        システムカタログのテーブル<m-b>pg_namespace</m-b>から列<m-b>nspacl</m-b>を参照すると、ロール名は<m-b>空</m-b>で表示される。
+        なお、アクセスコントロール情報は<m-b>ロール名=アクセス権限/権限を付与したロール名</m-b>のフォーマットで表示される。<br>
+        PostgreSQL14の時点で注意すべき仕様として、PUBLICロールは<m-b>publicスキーマ</m-b>に対するCREATE権限を持つことがあげられる。
+        そのため、デフォルト設定ではすべてのロールは<m-b>publicスキーマ</m-b>にオブジェクトを作成することができる。
+        PUBLICスキーマからpublicスキーマに対する権限を剥奪し、これを防ぐ場合、次のコマンドを実行する。
+    </p>
+    <pre><code>
+<m-b>REVOKE ALL ON SCHEMA public FROM PUBLIC;</m-b>
+    </code></pre>
+
+    <h3>定義済みロール (Predefined Roles)</h3>
+    <p>
+        PostgreSQLではスーパーユーザにしか許可されていない操作がいくつか存在し、その中にはDBの管理者作業として必要なものが含まれている。
+        しかし、これらの操作のためにスーパーユーザ権限を付与することは、権限を過剰に与えることになってしまう。
+        そこで、スーパーユーザの権限の一部を一般ユーザに持たせることができるように作成された権限群が、定義済みロールである<br>
+        PostgreSQL14では、次の定義済みロールが存在する。
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>ロール名</th>
+                <th>許可されたアクセス</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>pg_read_all_data</m-b></td>
+                <td>
+                    <ul>
+                        <li>すべてのスキーマへのUSAGE権限</li>
+                        <li>すべてのテーブル、ビュー、シーケンスに対するSELECT権限</li>
+                    </ul>
+                    BYPASSRLS属性は持たない。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>pg_write_all_data</m-b></td>
+                <td>
+                    <ul>
+                        <li>すべてのスキーマへのUSAGE権限</li>
+                        <li>すべてのテーブル、ビュー、シーケンスに対するINSERT、UPDATE、DELETE権限</li>
+                    </ul>
+                    BYPASSRLS属性は持たない。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>pg_read_all_settings</m-b></td>
+                <td>
+                    すべての設定変数の参照を許可する<br>
+                    スーパーユーザのみが取得できる値も参照可能
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>pg_read_all_stats</m-b></td>
+                <td>
+                    すべてのpg_stat_*ビューの参照を許可し、統計関連の拡張機能の使用を許可する<br>
+                    スーパーユーザのみが取得できる値も参照可能
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>pg_stat_scan_tables</m-b></td>
+                <td>
+                    長時間シェアロックを取得する可能性のあるモニタリング関数の実行を許可する
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>pg_monitor</m-b></td>
+                <td>
+                    以下の定義済みロールを包括して許可する
+                    <ul>
+                        <li>pg_read_all_settings</li>
+                        <li>pg_read_all_stats</li>
+                        <li>pg_stat_scan_tables</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>pg_database_owner</m-b></td>
+                <td>
+                    暗黙的に現在のデータベース所有者メンバとして構成する
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>pg_signal_backend</m-b></td>
+                <td>
+                    他のバックエンドクエリのキャンセルやセッションの終了を許可する
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>pg_read_server_files</m-b></td>
+                <td>
+                    データベースサーバ上でアクセスできる場所からのファイル読み込みを許可する
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>pg_write_server_files</m-b></td>
+                <td>
+                    データベースサーバ上でアクセスできる場所へのファイル書き込みを許可する
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>pg_execute_server_program</m-b></td>
+                <td>
+                    データベースを実行するユーザで、COPYなどのサーバーサイドプログラムを実行することを許可する
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <h4>PostgreSQL15のpublicスキーマの仕様変更</h4>
+    <p>
+        PostgreSQL15では、publicスキーマに定義済みロールの<m-b>pg_database_owner</m-b>が適用された。
+        これにより、publicスキーマへのCREATE権限を持つロールが、<m-b>データベースの所有者</m-b>に制限された。
+    </p>
+
+    <h3>ロールの設計方針</h3>
+    <p>
+        セキュリティ対策として一般的な考え方に、<m-b>職務分掌</m-b>と<m-b>最小権限の原則</m-b>があり、
+        PostgreSQLにおいてもこれに従うことが推奨される。
+        そのため、データベース作成時に作成される<m-b>スーパーユーザ</m-b>属性を持つユーザを使いまわすことは避けるべきである。
+        例えば、あるロールに定義済みロールを<m-b>GRANT</m-b>することで、スーパーユーザ権限のうち一部を付与できる。
+    </p>
+
+    <h3>ロールの設計要素</h3>
+    <ul>
+        <li>
+            <m-b>属性</m-b><br>
+            変更は<m-b>ALTER ROLE</m-b>コマンドで行う。
+        </li>
+        <li>
+            <m-b>権限</m-b><br>
+            変更は<m-b>GRANT</m-b>や<m-b>REVOKE</m-b>コマンドで行う。
+            データベースオブジェクト毎に設定を行い、同名の権限でもオブジェクトによって許可される操作が異なる点に注意する。
+        </li>
+    </ul>
+    <h4>変更可能な属性 (抜粋)</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>属性名</th>
+                <th>内容</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>SUPERUSER</m-b></td>
+                <td>スーパーユーザ属性の有無を定義する</td>
+            </tr>
+            <tr>
+                <td><m-b>CREATEDB</m-b></td>
+                <td>データベースの作成に関する属性を定義する</td>
+            </tr>
+            <tr>
+                <td><m-b>CREATEROLE</m-b></td>
+                <td>新しいロールを作成する属性を定義する</td>
+            </tr>
+            <tr>
+                <td><m-b>INHERIT</m-b></td>
+                <td>属するロールの権限を継承するかを定義する</td>
+            </tr>
+            <tr>
+                <td><m-b>LOGIN</m-b></td>
+                <td>データベースへのログイン属性を定義する</td>
+            </tr>
+        </tbody>
+    </table>
+    <h4>変更可能な権限 (抜粋)</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>オブジェクト</th>
+                <th>権限名</th>
+                <th>内容</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="3">データベース</td>
+                <td><m-b>CREATE</m-b></td>
+                <td>データベース内の新たなオブジェクト作成を許可する</td>
+            </tr>
+            <tr>
+                <td><m-b>CONNECT</m-b></td>
+                <td>データベースに接続することを許可する</td>
+            </tr>
+            <tr>
+                <td><m-b>TEMPORARY</m-b></td>
+                <td>データベース内で一時テーブルの作成を許可する</td>
+            </tr>
+            <tr>
+                <td rowspan="2">スキーマ</td>
+                <td><m-b>CREATE</m-b></td>
+                <td>スキーマ内に新しいオブジェクトを作ることを許可する</td>
+            </tr>
+            <tr>
+                <td><m-b>USAGE</m-b></td>
+                <td>スキーマ内に含まれるオブジェクトへのアクセスを許可する</td>
+            </tr>
+            <tr>
+                <td rowspan="7">テーブル</td>
+                <td><m-b>SELECT</m-b></td>
+                <td>テーブル、ビューにSELECTすることを許可する</td>
+            </tr>
+            <tr>
+                <td><m-b>INSERT</m-b></td>
+                <td>テーブル、ビューに新しい行をINSERTすることを許可する</td>
+            </tr>
+            <tr>
+                <td><m-b>UPDATE</m-b></td>
+                <td>テーブル、ビューの列をUPDATEすることを許可する</td>
+            </tr>
+            <tr>
+                <td><m-b>DELETE</m-b></td>
+                <td>テーブル、ビューの列をDELETEすることを許可する</td>
+            </tr>
+            <tr>
+                <td><m-b>TRUNCATE</m-b></td>
+                <td>テーブル、ビューのTRUNCATEを許可する</td>
+            </tr>
+            <tr>
+                <td><m-b>REFERENCES</m-b></td>
+                <td>テーブルの列を参照する外部キー制約作成を許可する</td>
+            </tr>
+            <tr>
+                <td><m-b>TRIGGER</m-b></td>
+                <td>テーブル、ビューでのトリガ作成を許可する</td>
+            </tr>
+        </tbody>
+    </table>
 
     <h2>その他調査まとめ</h2>
 
