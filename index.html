@@ -5,7 +5,6 @@
     <meta charset="utf-8">
     <title>OSS-DB Gold Practice</title>
     <meta name="author" content="Moriaki Kogure">
-    <meta name="viewport" content="width=device-width">
     <link rel="stylesheet" href="./asset/style.css">
     <link rel="icon" href="./asset/favicon.ico">
 </head>
@@ -2353,6 +2352,19 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         WAL領域の位置にも気を付ける必要がある。
         DBクラスタ作成時にデフォルトと異なる位置にWAL領域を指定する場合、<m-b>pg_wal</m-b>配下は<m-b>シンボリックリンク</m-b>となる。
         そのため、実体のWAL領域のWALファイルもバックアップする必要がある。
+    </p>
+    <h4>オンライン論理バックアップ</h4>
+    <p>
+        PostgreSQL付属コマンドの<m-b>pg_dump</m-b>または<m-b>pg_dumpall</m-b>を用いて取得する。<br>
+        pg_dumpでは、<m-b>プレーンテキスト</m-b>、<m-b>カスタム</m-b>、<m-b>tar</m-b>、<m-b>ディレクトリ</m-b>などの形式でバックアップを取得できる。
+        <m-b>カスタム</m-b>、<m-b>tar</m-b>、<m-b>ディレクトリ</m-b>はバイナリ形式のバックアップである。
+        リストア時には、プレーンテキストの場合<m-b>psql</m-b>を、バイナリ形式であれば<m-b>pg_restore</m-b>を用いる。<br>
+        pg_dumpは、<m-b>データベース</m-b>または<m-b>テーブル</m-b>単位でバックアップが取得できるが、
+        <m-b>ユーザ</m-b>や<m-b>データベース共通</m-b>のデータはバックアップできない。
+        これらのデータをバックアップする際は、pg_dumpallを使用する。
+        pg_dumpallは、<m-b>テキスト</m-b>形式のバックアップのみをサポートしているため、<m-b>psql</m-b>を用いてリストアする。<br>
+        pg_dump、pg_dumpallともに、<m-b>テーブル空間</m-b>、<m-b>ラージオブジェクト</m-b>のバックアップに対応している。
+        また、<m-b>設定ファイル</m-b>類のバックアップには対応していない。
     </p>
 
     <h2>その他調査まとめ</h2>
