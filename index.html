@@ -2094,7 +2094,7 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
             <tr>
                 <td><m-b>pg_execute_server_program</m-b></td>
                 <td>
-                    データベースを実行するユーザで、COPYなどのサーバーサイドプログラムを実行することを許可する
+                    データベースを実行するユーザで、COPYなどのサーバサイドプログラムを実行することを許可する
                 </td>
             </tr>
         </tbody>
@@ -2390,6 +2390,215 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
     </p>
 
     <h2>9章 監視計画</h2>
+
+    <h3>監視とは</h3>
+    <h4>監視計画で決定すること</h4>
+    <ul>
+        <li><m-b>監視項目の選定</m-b></li>
+        <li><m-b>監視する間隔</m-b></li>
+        <li><m-b>何をもって異常と判断するかの閾値</m-b></li>
+    </ul>
+    <h4>一般的な監視の間隔</h4>
+    <p>
+        監視する間隔は、<m-b>SLA</m-b>などのシステム要件に基づいて決定する。
+        一般的に、死活監視は<m-b>数秒</m-b>間隔とし、性能監視では<m-b>数分</m-b>間隔で多くの情報を取得する。
+    </p>
+
+    <h3>監視項目</h3>
+    <ul>
+        <li><m-b>サーバ</m-b>に問題が起きていないか</li>
+        <li><m-b>PostgreSQL</m-b>に問題が起きていないか</li>
+    </ul>
+    <h4>サーバの監視</h4>
+    <p>
+        サーバリソースとして、<m-b>CPU</m-b>、<m-b>メモリ</m-b>、<m-b>ディスク</m-b>、<m-b>ネットワーク</m-b>
+        が正常に動いているかを監視する。
+        これらは、OSやストレージに付属するコマンドの<m-b>sar</m-b>、<m-b>iostat</m-b>、<m-b>vmstat</m-b>、<m-b>top</m-b>、
+        <m-b>netstat</m-b>などを用いて情報を収集する。
+    </p>
+    <h4>PostgreSQLの監視</h4>
+    <ul>
+        <li>必要な<m-b>プロセス</m-b>は正常に稼働しているか</li>
+        <li><m-b>ディスク容量</m-b>に問題はないか</li>
+        <li>想定通りの<m-b>性能</m-b>は出せているか</li>
+        <li>PostgreSQLの<m-b>サーバーログ</m-b>に異常を知らせる通知はないか</li>
+    </ul>
+    <h4>プロセスの監視</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>監視項目</th>
+                <th>監視方法</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>バックエンドプロセス、<br>バックグラウンドプロセスの数や状態</td>
+                <td>
+                    <ul>
+                        <li>OSの<m-b>ps</m-b>コマンド</li>
+                        <li>PostgreSQLの<m-b>pg_stat_activity</m-b>ビュー</li>
+                        <li>PostgreSQLの<m-b>pg_stat_archiver</m-b>ビュー</li>
+                        <li>PostgreSQLの<m-b>pg_stat_progress_vacuum</m-b>ビュー</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td>PostgreSQLに接続できるか</td>
+                <td><m-b>psql</m-b>などのクライアントアプリケーションを用いた確認</td>
+            </tr>
+            <tr>
+                <td>レプリケーション状態に異常がないか</td>
+                <td>
+                    <ul>
+                        <li><m-b>pg_stat_replication</m-b>ビュー</li>
+                        <li><m-b>pg_stat_replication_slots</m-b>ビュー</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td>プロセスの実行状況</td>
+                <td>
+                    <ul>
+                        <li><m-b>pg_stat_progress_basebackup</m-b>ビュー</li>
+                        <li><m-b>pg_stat_progress_vacuum</m-b>ビュー</li>
+                        <li><m-b>pg_stat_progress_analyze</m-b>ビュー</li>
+                        <li><m-b>pg_stat_progress_copy</m-b>ビュー</li>
+                        <li><m-b>pg_stat_progress_create_index</m-b>ビュー</li>
+                        <li><m-b>pg_stat_progress_cluster</m-b>ビュー</li>
+                    </ul>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <h4>ディスク容量の監視</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>監視項目</th>
+                <th>監視方法</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>ディスク容量</td>
+                <td>
+                    <ul>
+                        <li>OSの<m-b>df</m-b>コマンド</li>
+                        <li>OSの<m-b>du</m-b>コマンド</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td>データベース、テーブル、インデックスのサイズ</td>
+                <td>
+                    <ul>
+                        <li><m-b>pg_database_size</m-b>関数</li>
+                        <li><m-b>pg_total_relation_size</m-b>関数</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td>テーブル、インデックスが不必要に肥大化していないか</td>
+                <td>
+                    <ul>
+                        <li><m-b>pg_stat_user_tables</m-b>ビュー</li>
+                        <li><m-b>pg_stat_user_indexes</m-b>ビュー</li>
+                    </ul>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <h4>性能の監視</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>稼働統計情報ビュー</th>
+                <th>対象</th>
+                <th>内容</th>
+                <th>該当列</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="3"><m-b>pg_stat_database</m-b></td>
+                <td rowspan="3">データベース</td>
+                <td>コミット、ロールバック数</td>
+                <td>
+                    <ul>
+                        <li><m-b>xact_commit</m-b></li>
+                        <li><m-b>xact_rollback</m-b></li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td>データベースのキャッシュヒット率</td>
+                <td>
+                    <ul>
+                        <li><m-b>blks_read</m-b></li>
+                        <li><m-b>blks_hit</m-b></li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td>デッドロック発生有無</td>
+                <td>
+                    <ul>
+                        <li><m-b>deadlocks</m-b></li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td rowspan="2"><m-b>pg_statio_user_tables</m-b>、<br><m-b>pg_statio_user_indexes</m-b></td>
+                <td rowspan="2">テーブル、インデックス</td>
+                <td>テーブルのキャッシュヒット率</td>
+                <td>
+                    <ul>
+                        <li><m-b>heap_blks_read</m-b></li>
+                        <li><m-b>heap_blks_hit</m-b></li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td>インデックスのキャッシュヒット率</td>
+                <td>
+                    <ul>
+                        <li><m-b>idx_blks_read</m-b></li>
+                        <li><m-b>idx_blks_hit</m-b></li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td rowspan="2"><m-b>pg_stat_activity</m-b></td>
+                <td rowspan="2">活動中のバックエンドプロセス</td>
+                <td>トランザクションの実行時間</td>
+                <td>
+                    <ul>
+                        <li><m-b>backend_start</m-b></li>
+                        <li><m-b>xact_start</m-b></li>
+                        <li><m-b>query_start</m-b></li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td>実行中のクエリ</td>
+                <td>
+                    <ul>
+                        <li><m-b>wait_event_type</m-b></li>
+                        <li><m-b>wait_event</m-b></li>
+                        <li><m-b>state</m-b></li>
+                        <li><m-b>query</m-b></li>
+                    </ul>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <p>
+        また、設定ファイル<m-b>postgresql.conf</m-b>の<m-b>log_min_duration_statement</m-b>を設定することで、
+        想定よりも時間のかかったクエリをサーバーログに出力することも可能である。
+    </p>
+
+    <h3>サーバログ設定</h3>
 
     <h2>その他調査まとめ</h2>
 
