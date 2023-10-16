@@ -115,7 +115,7 @@
         </tbody>
     </table>
 
-    <h3>プロセスメモリ</h3>
+    <h3>プロセスメモリ域</h3>
     <table>
         <thead>
             <tr>
@@ -1776,7 +1776,7 @@ sample2 | <m-b>    (空白)    </m-b>
                     ただし、増加数には上限があり、領域全体の最大サイズは基本的に一定となる。<br>
                     WALファイルはリカバリに使用する重要なファイルのため、データベースクラスタとは別の<m-b>ディスク</m-b>に配置したり、
                     <m-b>二重化</m-b>が可能なストレージ上に配置するなどを検討する。<br>
-                    WAL領域をデータベースクラスタ外に配置する場合、initdbやpg_ctrlコマンドのオプションとして、<m-b>--waldir</m-b>または<m-b>-X</m-b>を指定する。
+                    WAL領域をデータベースクラスタ外に配置する場合、initdbやpg_ctlコマンドのオプションとして、<m-b>--waldir</m-b>または<m-b>-X</m-b>を指定する。
                 </td>
             </tr>
             <tr>
@@ -1943,7 +1943,7 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
     <p>
         ロケールとは、地域(国)によって異なる<m-b>単位</m-b>、<m-b>記号</m-b>、<m-b>日付</m-b>、<m-b>通貨</m-b>などの表記や比較規則を指す概念である。
         PostgreSQLではこのロケールの概念をサポートし、<m-b>データベースクラスタ全体</m-b>または<m-b>データベース単位</m-b>で指定することができる。<br>
-        データベースクラスタに対しロケールを設定する場合、initdbやpg_ctrlコマンドで<m-b>--locale</m-b>オプションを指定する。
+        データベースクラスタに対しロケールを設定する場合、initdbやpg_ctlコマンドで<m-b>--locale</m-b>オプションを指定する。
         ロケールを使用しない場合は<m-b>--no-locale</m-b>オプションを指定する。
         また、データベースごとにロケールを指定する場合、createdbコマンドの<m-b>--locale</m-b>オプションを指定する。
     </p>
@@ -2921,6 +2921,96 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
     </p>
 
     <h3>PostgreSQLのメモリ設定</h3>
+    <h4>共有メモリ域の設定</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>パラメータ</th>
+                <th>デフォルト値</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>shared_buffers</m-b></td>
+                <td><m-b>128MB</m-b></td>
+                <td>共有バッファのメモリサイズ</td>
+            </tr>
+            <tr>
+                <td><m-b>wal_buffers</m-b></td>
+                <td><m-b>-1</m-b></td>
+                <td>
+                    WALデータが利用する共有メモリサイズ<br>
+                    <m-b>-1</m-b>を指定した場合、<m-b>shared_buffers</m-b>の<m-b>1/32</m-b>が設定される。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>max_connections</m-b></td>
+                <td><m-b>100</m-b></td>
+                <td>クライアントの最大同時接続数</td>
+            </tr>
+            <tr>
+                <td><m-b>max_prepared_transactions</m-b></td>
+                <td><m-b>0</m-b></td>
+                <td>プリペアドトランザクションの上限</td>
+            </tr>
+            <tr>
+                <td><m-b>max_locks_per_transaction</m-b></td>
+                <td><m-b>64</m-b></td>
+                <td>トランザクションの平均取得ロック数</td>
+            </tr>
+            <tr>
+                <td><m-b>min_dynamic_shared_memory</m-b></td>
+                <td><m-b>0</m-b></td>
+                <td>パラレルクエリ向けにあらかじめ確保しておく共有メモリサイズ</td>
+            </tr>
+        </tbody>
+    </table>
+    <p>
+        共有メモリ域の中でも特に重要なパラメータは、<m-b>shared_buffers</m-b>である。
+        デフォルトで<m-b>128MB</m-b>と比較的小さな値が設定されているため、多くの場合でチューニングが推奨される。
+        1GB以上のメモリが搭載された環境では、<m-b>1/4</m-b>を目安に設定することが推奨される。<br>
+        PostgreSQLでは、共有バッファを使い切ると利用されていないページをバッファから追い出す(<m-b>Clocksweepアルゴリズム</m-b>)ため、
+        追い出されたデータを再読み込みする場合は性能が劣化する。
+        ただし、共有バッファが大きすぎる場合は探索に時間がかかるため、大きければいいわけでもない。
+        仮にバッファから追い出されても、実際は<m-b>ディスクキャッシュ</m-b>から読み出せるケースが多いことも関連する。<br>
+        共有メモリ域のその他のパラメータは、デフォルト設定で十分なケースがほとんどである。
+    </p>
+    <h4>プロセスメモリ域の設定</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>パラメータ</th>
+                <th><nobr>デフォルト値</nobr></th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>work_mem</m-b></td>
+                <td><m-b>4MB</m-b></td>
+                <td>問い合わせ時のソートとハッシュデータ格納に使われるメモリサイズ</td>
+            </tr>
+            <tr>
+                <td><m-b>maintenance_work_mem</m-b></td>
+                <td><m-b>64MB</m-b></td>
+                <td>VACUUM、CREATE INDEX、ALTER TABLEなどのメンテナンス操作時に使われるメモリサイズ</td>
+            </tr>
+            <tr>
+                <td><m-b>autovacuum_work_mem</m-b></td>
+                <td><m-b>-1</m-b></td>
+                <td>
+                    自動バキュームに使われるメモリサイズ<br>
+                    <m-b>-1</m-b>を指定すると<m-b>maintenance_work_mem</m-b>が使用される。
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <p>
+        これらの設定値は、postgresql.confのリロード(<m-b>pg_ctl reload</m-b>コマンドなど)によって読み込まれる。<br>
+        デフォルト設定では、自動バキューム時にパラメータ<m-b>autovacuum_max_workers</m-b> × <m-b>maintenance_work_mem</m-b>の分だけメモリを消費する。
+        これにより大量にメモリを消費するのを防ぐため、<m-b>autovacuum_work_mem</m-b>を設定し、自動バキューム時のメモリ消費の上限を設定することが推奨されている。
+    </p>
 
     <h2>その他調査まとめ</h2>
 
