@@ -819,7 +819,7 @@ host all all 192.168.10.0/24 <m-b>ident map=foo_indent</m-b>
     <h3>同時実行制御</h3>
     <p>
         PostgreSQLでは、<m-b>追記型アーキテクチャ</m-b>というアーキテクチャを採用することで、
-        <m-b>MVCC(Multi Version Concurrency Control)</m-b>と呼ばれる同時実行制御を実現している。
+        <m-b>MVCC</m-b>(<m-b>Multi Version Concurrency Control</m-b>)と呼ばれる同時実行制御を実現している。
         追記型アーキテクチャとは、データ更新時にデータを直接書き換えるのではなく、
         トランザクションごとに発行されるID(<m-b>XID</m-b>)をテーブルの各行に保持することで、
         トランザクションごとのデータを保持する仕組みである。<br>
