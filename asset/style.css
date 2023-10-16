@@ -23,7 +23,7 @@ h1 {
 h2 {
     display: block;
     position: relative;
-    margin: 3em 2.5rem 0;
+    margin: 3em  0 0 2.5rem;
     padding: 0 1rem;
     border-bottom: 5px double #333;
 }
