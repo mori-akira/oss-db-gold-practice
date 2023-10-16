@@ -31,52 +31,66 @@
         <thead>
             <tr>
                 <th>プロセス名</th>
+                <th>psコマンドの表示</th>
                 <th>説明</th>
             </tr>
         </thead>
         <tbody>
             <tr>
                 <td><mask-block>マスタサーバ</mask-block></td>
+                <td>起動コマンドそのものが表示</td>
                 <td>最初に起動される親プロセス</td>
             </tr>
             <tr>
                 <td><mask-block>ロガー</mask-block></td>
+                <td><m-b>logger</m-b></td>
                 <td>サーバログを書き出す</td>
             </tr>
             <tr>
                 <td><mask-block>チェックポインタ</mask-block></td>
+                <td><m-b>checkpointer</m-b></td>
                 <td>すべてのダーティページをデータファイルに書き出す</td>
             </tr>
             <tr>
                 <td><mask-block>ライタ</mask-block></td>
+                <td><m-b>background writer</m-b></td>
                 <td>共有バッファの内容をデータファイルに書き出す</td>
             </tr>
             <tr>
                 <td><mask-block>WALライタ</mask-block></td>
+                <td><m-b>walwriter</m-b></td>
                 <td>WALバッファの内容をWALファイルに書き出す</td>
             </tr>
             <tr>
                 <td><mask-block>自動バキュームランチャ</mask-block></td>
+                <td><m-b>autovacuum launcher</m-b></td>
                 <td>設定に従って自動バキュームワーカを起動する</td>
             </tr>
             <tr>
                 <td><mask-block>自動バキュームワーカ</mask-block></td>
+                <td><m-b>autovacuum worker</m-b></td>
                 <td>設定に従って自動バキューム処理を行う</td>
             </tr>
             <tr>
                 <td><mask-block>統計情報コレクタ</mask-block></td>
+                <td><m-b>stats collector</m-b></td>
                 <td>データベースの活動状況に関する統計情報を収集する</td>
             </tr>
             <tr>
                 <td><mask-block>バックグラウンドワーカ</mask-block></td>
+                <td>モジュール名が表示される</td>
                 <td>ロジカルレプリケーション用、またはユーザ定義のワーカ</td>
             </tr>
             <tr>
                 <td><mask-block>バックエンドプロセス</mask-block></td>
+                <td class="wrappable">
+                    <nobr><m-b>ユーザ名 データベース名 [接続] 状態</m-b></nobr><br>というフォーマットで出力される
+                </td>
                 <td>クライアントからの接続要求に対して起動され、クエリを処理する</td>
             </tr>
             <tr>
                 <td><mask-block>パラレルワーカ</mask-block></td>
+                <td class="wrappable"><m-b>parallel workder for プロセスID</m-b><br>というフォーマットで出力される</td>
                 <td>パラレルスキャン実行時に起動され、クエリを処理する</td>
             </tr>
         </tbody>
@@ -2805,7 +2819,9 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         <thead>
             <tr>
                 <th>パラメータ</th>
-                <th><nobr>デフォルト値</nobr></th>
+                <th>
+                    <nobr>デフォルト値</nobr>
+                </th>
                 <th>説明</th>
             </tr>
         </thead>
@@ -2981,7 +2997,9 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         <thead>
             <tr>
                 <th>パラメータ</th>
-                <th><nobr>デフォルト値</nobr></th>
+                <th>
+                    <nobr>デフォルト値</nobr>
+                </th>
                 <th>説明</th>
             </tr>
         </thead>
@@ -3011,6 +3029,284 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         デフォルト設定では、自動バキューム時にパラメータ<m-b>autovacuum_max_workers</m-b> × <m-b>maintenance_work_mem</m-b>の分だけメモリを消費する。
         これにより大量にメモリを消費するのを防ぐため、<m-b>autovacuum_work_mem</m-b>を設定し、自動バキューム時のメモリ消費の上限を設定することが推奨されている。
     </p>
+
+    <h3>HugePage設定</h3>
+    <p>
+        PostgreSQLでは、共有メモリを大きくするとメモリ管理に用いるページテーブルも肥大化し、CPU負荷の増加と性能劣化の問題が発生する。
+        そこで、<m-b>Linux</m-b>環境ではHugePage機能を用いることでページテーブルを小さくすることが期待できる。
+        PostgreSQLでHugePageを用いる場合、OSの設定とpostgresql.confの設定が必要となる。<br>
+        OS設定では、まず前提として<m-b>CONFIG_HUGETLBFS=y</m-b>および<m-b>CONFIG_HUGETLB_PAGE=y</m-b>のLinuxカーネルが必要である。
+        また、OS設定としてカーネルパラメータ<m-b>vm.nr_hugepages</m-b>を共有メモリサイズに合わせて調整する必要がある。<br>
+        PostgreSQLのHugePage数は、次の手順で産出する。
+    </p>
+    <ol>
+        <li>
+            postmasterプロセスの<m-b>VmPeak</m-b>値を取得<br>
+            コマンド: <m-b>grep ^VmPeak /proc/`head -1 $PGDATA/postmaster.pid`/status</m-b>
+        </li>
+        <li>
+            HugePageサイズを取得<br>
+            コマンド: <m-b>grep ^Hugepagesize /proc/meminfo</m-b>
+        </li>
+        <li>
+            HugePageサイズとVmPeakの値から、PostgreSQLが必要とするHugePage数を算出<br>
+            <m-b>VmPeak / HugePageサイズ</m-b>
+        </li>
+        <li>
+            HugePage数を設定<br>
+            コマンド: <m-b>sysctl -w vm.nr_hugepages=算出したHugePage数</m-b>
+        </li>
+    </ol>
+    <p>
+        なお、PostgreSQL以外にもHugePageを必要とするアプリケーションを実行する場合、HugePageの合計値を設定する。<br>
+        PostgreSQLがHugePageを利用するかは、パラメータ<m-b>huge_pages</m-b>によって設定する。
+        これは、<m-b>on</m-b>、<m-b>off</m-b>、<m-b>try</m-b>のキーワードを指定でき、デフォルト値は<m-b>try</m-b>である。
+        デフォルト値で設定した場合、HugePage機能が使用できる場合に使用し、他のアプリケーションが使用していてHugePageを使用できない場合は
+        HugePageを使わずにPostgreSQLを起動することを意味する。
+    </p>
+
+    <h3>OSのディスク設定</h3>
+    <p>
+        OS側のディスクに関連する設定は、<m-b>I/Oスケジューラ</m-b>の設定が有効である。
+        これは、OS上で動作している様々なプロセスからのI/O要求をどのように処理するかを定めているパラメータである。
+        設定は、次のコマンドで確認できる。
+    </p>
+    <pre><code>
+<m-b>cat /sys/block/sda/queue/scheduler</m-b>
+    </code></pre>
+    <h4>設定可能なI/Oスケジューラ</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>設定項目</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>none</m-b>または<m-b>noop</m-b></td>
+                <td>OSはスケジュールに関与しない</td>
+            </tr>
+            <tr>
+                <td><m-b>anticipatory</m-b></td>
+                <td>I/O要求に対してドライブの中の物理的な配置が近いデータを優先して処理する</td>
+            </tr>
+            <tr>
+                <td><m-b>mq-deadline</m-b>または<m-b>deadline</m-b></td>
+                <td>I/O要求の待ち時間に上限を設け、限界に近いI/O要求を優先して処理する</td>
+            </tr>
+            <tr>
+                <td><m-b>bfq</m-b>または<m-b>cfq</m-b></td>
+                <td>I/O要求が特定のプロセスやアプリケーションに占有されないように時間や帯域を分散する</td>
+            </tr>
+            <tr>
+                <td><m-b>kyber</m-b></td>
+                <td>read/writeのレイテンシをそれぞれの目標値に近づけるように調整する</td>
+            </tr>
+        </tbody>
+    </table>
+    <p>
+        PostgreSQLでは、データ書き込みプロセスやWAL書き込みプロセスといった少数のプロセスがI/O要求の大半を占め、
+        データアクセスもランダムアクセスが多いため、I/Oスケジューラは<m-b>mq-deadline</m-b>に設定することが推奨される。
+        一方、RAIDドライバがI/Oスケジュールを行う場合や、NVMeのような高速なデバイスを利用する場合など、
+        OSのI/Oスケジューラがオーバーヘッドとなってしまうことがあり、その場合は<m-b>none</m-b>に設定することも検討する。
+    </p>
+
+    <h3>PostgreSQLのディスク設定</h3>
+    <h4>システムに制限を設けるパラメータ</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>パラメータ</th>
+                <th>デフォルト値</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>temp_file_limit</m-b></td>
+                <td><m-b>-1</m-b></td>
+                <td>
+                    あるプロセスが一時ファイルとして利用可能な最大容量<br>
+                    <m-b>-1</m-b>を指定する場合、制限なし。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>max_files_per_process</m-b></td>
+                <td><m-b>1000</m-b></td>
+                <td>あるプロセスが同時に開くことのできるファイル数の上限</td>
+            </tr>
+        </tbody>
+    </table>
+    <h4>ライタに関して、性能に影響を与えるパラメータ</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>パラメータ</th>
+                <th>デフォルト値</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>bgwriter_delay</m-b></td>
+                <td><m-b>200ms</m-b></td>
+                <td>
+                    バックグラウンドライタの動作周期<br>
+                    動作周期の現実的な最小単位は<m-b>10ms</m-b>で、それ未満の値を設定しても切り上がる場合が多い。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>bgwriter_lru_maxpages</m-b></td>
+                <td><m-b>100</m-b></td>
+                <td>一度にバックグラウンドライタが書き込むページ数の上限</td>
+            </tr>
+            <tr>
+                <td><m-b>bgwriter_lru_multiplier</m-b></td>
+                <td><m-b>2.0</m-b></td>
+                <td>
+                    書き込みが必要になったページのうち、どのくらいの割合を書き込むのか<br>
+                    直近の書き込み量と比較して、何倍まで処理するべきか予測するのに使用する。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>bgwriter_flush_after</m-b></td>
+                <td><m-b>512kB(Linux)</m-b><br>または<m-b>0(それ以外)</m-b></td>
+                <td>
+                    OSに対して記憶媒体への書き込みを強制する、バックグラウンドライタの書き込みの上限値<br>
+                    単位省略時は<m-b>ページ数</m-b>の指定となり、<m-b>0</m-b>を指定した場合はOSへの書き込み強制を無効化する。
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <h4>WALに関して、性能に影響を与えるパラメータ</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>パラメータ</th>
+                <th>デフォルト値</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>walwriter_delay</m-b></td>
+                <td><m-b>200ms</m-b></td>
+                <td>
+                    WALライタの動作周期<br>
+                    動作周期の現実的な最小単位は<m-b>10ms</m-b>で、それ未満の値を設定しても切り上がる場合が多い。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>max_wal_size</m-b></td>
+                <td><m-b>1GB</m-b></td>
+                <td>
+                    チェックポイント間のWALの最大サイズ<br>
+                    最後のチェックポイント実行からこのサイズのWALが生成されるとチェックポイントが動作する。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>min_wal_size</m-b></td>
+                <td><m-b>80MB</m-b></td>
+                <td>
+                    リサイクル対象となる古いWALファイルのサイズ<br>
+                    チェックポイント後にこの設定値分のファイルは削除されずに、再利用可能な状態で維持される。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>checkpoint_timeout</m-b></td>
+                <td><m-b>5min</m-b></td>
+                <td>チェックポイントの間隔</td>
+            </tr>
+            <tr>
+                <td><m-b>checkpoint_completion_target</m-b></td>
+                <td>
+                    <m-b>0.5</m-b>(~PostgreSQL13)<br>
+                    <m-b>0.9</m-b>(PostgreSQL14~)
+                </td>
+                <td>
+                    次のチェックポイント発生までのインターバルのうち、チェックポイント完了までの時間の比率<br>
+                    ここで指定した比率の時間でチェックポイント処理が完了するようにI/O負荷が自動調整される。
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>11章 高可用性と負荷分散</h2>
+
+    <h3>サーバの役割と呼び名</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>役割</th>
+                <th>呼び名</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>データの読み書きを行う</td>
+                <td>
+                    <ul>
+                        <li><m-b>読み書きサーバ</m-b></li>
+                        <li><m-b>マスタ</m-b></li>
+                        <li><m-b>プライマリ</m-b></li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td>プライマリ側の変更を追跡する</td>
+                <td>
+                    <ul>
+                        <li><m-b>スレーブ</m-b></li>
+                        <li><m-b>スタンバイ</m-b></li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td>昇格するまでデータを読み書きできない</td>
+                <td><m-b>ウォームスタンバイ</m-b></td>
+            </tr>
+            <tr>
+                <td>昇格しなくてもデータの読み込みができる</td>
+                <td><m-b>ホットスタンバイ</m-b></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>レプリケーションの方式</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>方式</th>
+                <th>特徴</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>共有ディスク</m-b></td>
+                <td>
+                    プライマリとスタンバイでデータベースクラスタを共有する。
+                    プライマリ稼働中はスタンバイは停止している必要がある。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>ファイルシステムレプリケーション</m-b></td>
+                <td>共有ディスク相当の機能をソフトウェアレベルで行い、プライマリとスタンバイでデータベースクラスタを共有する。</td>
+            </tr>
+            <tr>
+                <td><m-b>ログシッピング</m-b></td>
+                <td>WALベースのレプリケーション</td>
+            </tr>
+            <tr>
+                <td><m-b>トリガベースレプリケーション</m-b></td>
+                <td>プライマリへの更新をトリガとして、スタンバイに同じ更新を伝播する。</td>
+            </tr>
+            <tr>
+                <td><m-b>SQLベースレプリケーション</m-b></td>
+                <td>プライマリとスタンバイに同じSQLを送るミドルウェアを仲介させて実現する。</td>
+            </tr>
+        </tbody>
+    </table>
 
     <h2>その他調査まとめ</h2>
 
