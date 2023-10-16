@@ -2884,6 +2884,44 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         ただし、実際にデッドロックが発生した際に、検出が遅れてしまうことにも留意する。
     </p>
 
+    <h3>OSのメモリ設定</h3>
+    <p>
+        OSは、<m-b>共有メモリ</m-b>の最大容量に制限を設けている。
+        Linuxにおいて、制限を受ける可能性のあるカーネルパラメータは次表の通り。
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>カーネルパラメータ</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>kernel.shmmax</m-b></td>
+                <td>共有メモリセグメントの最大値(バイト単位)</td>
+            </tr>
+            <tr>
+                <td><m-b>kernel.shmall</m-b></td>
+                <td>使用可能な共有メモリサイズ(ページ単位)</td>
+            </tr>
+        </tbody>
+    </table>
+    <p>
+        近年のLinuxディストリビュージョンでカーネルパラメータを設定する場合、<m-b>sysctl</m-b>コマンドが使用できる。
+        共有メモリサイズを16GB(=17179869184バイト)、共有メモリサイズを4194394ページに設定する場合、次のようにコマンドを実行する。
+    </p>
+    <pre><code>
+<m-b>sysctl -w kernel.shmmax=17179869184</m-b>
+<m-b>sysctl -w kernel.shmall=4194394</m-b>
+    </code></pre>
+    <p>
+        なお、sysctlコマンドで設定したパラメータは再起動するとデフォルト値に戻るため、
+        <m-b>/etc/sysctl.conf</m-b>ファイルに設定値を保存することが推奨される。
+    </p>
+
+    <h3>PostgreSQLのメモリ設定</h3>
+
     <h2>その他調査まとめ</h2>
 
     <h3>関数の変動性分類</h3>
