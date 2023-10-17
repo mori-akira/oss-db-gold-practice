@@ -3308,6 +3308,26 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         </tbody>
     </table>
 
+    <h3>ストリーミングレプリケーション</h3>
+    <p>
+        PostgreSQL本体に備わったレプリケーション機能で、WALをファイル単位でなく変更内容(<m-b>WALレコード</m-b>)単位で送信する。
+        PostgreSQL9.0で<m-b>非同期レプリケーション</m-b>が導入されて以降、<m-b>同期レプリケーション</m-b>、<m-b>カスケードレプリケーション</m-b>、
+        <m-b>remote_writeモードレプリケーション</m-b>が導入されてきた。
+    </p>
+    <h4>仕組み</h4>
+    <p>
+        スタンバイは、プライマリで生成された<m-b>WAL</m-b>を再実行することでレプリケーションを実現する。
+        WALは、データベースの性能を担保しつつ、データの<m-b>永続性</m-b>を保証する仕組みである。
+        テーブルやインデックスの更新時に、テーブルファイルやインデックスファイルに直接書き込みをすると性能が劣化するが、
+        更新時は<m-b>WALレコード</m-b>のみ同期書き込みを行う。<br>
+        WALレコードには、<m-b>LSN</m-b>(<m-b>Long Sequence Number</m-b>)と呼ばれる一位の値が払いだされる。
+        リカバリ時は、必要なLSN位置から順に再実行される。
+        これは単なる文字列ではなく、<m-b>pg_lsn</m-b>というデータ型で扱われる。
+        これにより、比較演算や差分演算が容易となった。<br>
+        WALレコードを出力しない<m-b>unlogged</m-b>テーブルでは、ストリーミングレプリケーションによるレプリケーションはできない。
+    </p>
+    <h4>walsender/walreceiverプロセス</h4>
+
     <h2>その他調査まとめ</h2>
 
     <h3>関数の変動性分類</h3>
@@ -3359,6 +3379,18 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         テーブル名またはテーブルの<m-b>oid</m-b>を引数に渡す。<br>
         ビューを引数に指定した場合、結果は<m-b>0</m-b>となる。
     </p>
+
+    <h3>WALの修正</h3>
+    <p>
+        WALが壊れてしまうとPostgreSQLは読みだすWALが分からなくなり、起動ができなくなる。
+        このような場合、<m-b>pg_resetwal</m-b>コマンドを用いて修復ができる。
+        このコマンドは、正常な位置でWALが読み書きできるようにPostgreSQL内部の制御情報を修正する。
+    </p>
+    <blockquote>
+        <a href="https://www.postgresql.jp/docs/12/app-pgresetwal.html" target="_blank">
+            pg_resetwal
+        </a>
+    </blockquote>
 
     <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"
         integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
