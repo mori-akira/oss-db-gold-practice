@@ -3326,7 +3326,94 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         これにより、比較演算や差分演算が容易となった。<br>
         WALレコードを出力しない<m-b>unlogged</m-b>テーブルでは、ストリーミングレプリケーションによるレプリケーションはできない。
     </p>
-    <h4>walsender/walreceiverプロセス</h4>
+    <h4>walsenderプロセスで必要な設定</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>設定ファイル</th>
+                <th>パラメータ</th>
+                <th>設定値</th>
+                <th>デフォルト値</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tbody>
+                <tr>
+                    <td rowspan="4">postgresql.conf</td>
+                    <td><m-b>wal_level</m-b></td>
+                    <td><m-b>replica</m-b></td>
+                    <td><m-b>replica</m-b></td>
+                </tr>
+                <tr>
+                    <td><m-b>max_wal_senders</m-b></td>
+                    <td><m-b>1以上</m-b></td>
+                    <td><m-b>10</m-b></td>
+                </tr>
+                <tr>
+                    <td><m-b>archive_mode</m-b></td>
+                    <td><m-b>on</m-b></td>
+                    <td><m-b>off</m-b></td>
+                </tr>
+                <tr>
+                    <td><m-b>archive_command</m-b></td>
+                    <td><m-b>WALをアーカイブ領域に移すコマンド</m-b></td>
+                    <td><m-b>空文字</m-b></td>
+                </tr>
+                <tr>
+                    <td><m-b>pg_hba.conf</m-b></td>
+                    <td colspan="3">
+                        database列に<m-b>"replication"</m-b>
+                    </td>
+                </tr>
+            </tbody>
+        </tbody>
+    </table>
+    <h4>walreceiverプロセスで必要な設定</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>設定ファイル</th>
+                <th>パラメータ</th>
+                <th>設定値</th>
+                <th>デフォルト値</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="3">postgresql.conf</td>
+                <td><m-b>hot_standby</m-b></td>
+                <td><m-b>on</m-b></td>
+                <td><m-b>on</m-b></td>
+            </tr>
+            <tr>
+                <td><m-b>restore_command</m-b></td>
+                <td><m-b>アーカイブファイルをpg_walに移すコマンド</m-b></td>
+                <td><m-b>空文字</m-b></td>
+            </tr>
+            <tr>
+                <td><m-b>primary_conninfo</m-b></td>
+                <td><m-b>プライマリへの接続情報</m-b></td>
+                <td><m-b>空文字</m-b></td>
+            </tr>
+        </tbody>
+    </table>
+    <p>
+        上記以外にも、スタンバイとして起動するにはデータベースクラスタに<m-b>standby.signal</m-b>ファイルを配置する。
+        なお、これはPostgreSQL12以降の仕様で、11以前は<m-b>recovery.conf</m-b>に設定を記述していた。
+        12以降では、データベースクラスタに<m-b>recovery.conf</m-b>というファイルが存在する場合、PostgreSQLが起動しない仕様となっている。
+    </p>
+    <h4>walsender/walreceiverプロセスの処理</h4>
+    <p>
+        walsenderとwalreceiverがWALをやり取りするとき、<m-b>walreceiver</m-b>が主導して処理が行われる。
+        このため、パラメータ<m-b>max_wal_receiver</m-b>の限り、動的にスタンバイを増設できる。<br>
+        walreceiverがWALレコードを受け取ると、次の順に処理が行われる。
+    </p>
+    <ol>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+    </ol>
 
     <h2>その他調査まとめ</h2>
 
