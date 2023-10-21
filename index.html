@@ -3409,11 +3409,289 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         walreceiverがWALレコードを受け取ると、次の順に処理が行われる。
     </p>
     <ol>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
+        <li>walsenderプロセスにWALレコードを受け取ったことを通知する</li>
+        <li>walreceiverプロセスは受け取ったWALレコードを<m-b>同期書き込み</m-b>する</li>
+        <li>
+            walreceiverプロセスは、<m-b>startup</m-b>プロセス(実際に<m-b>リカバリ</m-b>処理を行うプロセス)に、
+            WALレコードを受け取ったことを通知する
+        </li>
+        <li><m-b>startup</m-b>プロセスがWALレコードを読み取り再適用する</li>
     </ol>
+
+    <h3>可能なレプリケーション構成</h3>
+    <p>
+        ストリーミングレプリケーションは、<m-b>1:n</m-b>の関係でスタンバイを構成できる、
+        <m-b>マルチスタンバイ構成</m-b>と呼ばれる構成である。
+        また、スタンバイに対しさらにスタンバイを接続する<m-b>カスケード構成</m-b>も構成可能である。
+        これらの共通点は、<m-b>プライマリは1台</m-b>という点である。
+    </p>
+    <h4>同期/非同期</h4>
+    <p>
+        レプリケーションにおける同期/非同期の違いは、プライマリが<m-b>スタンバイへのWAL適用</m-b>を待機するかどうかである。
+        同期/非同期の設定は、<m-b>プライマリ</m-b>のpostgresql.confのパラメータ<m-b>synchronous_commit</m-b>で次表のように設定できる。
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>設定値</th>
+                <th>同期/非同期</th>
+                <th>プライマリのWAL処理</th>
+                <th>スタンバイのWAL処理</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>off</m-b></td>
+                <td>非同期</td>
+                <td><m-b>待たない</m-b></td>
+                <td>待たない</td>
+            </tr>
+            <tr>
+                <td><m-b>local</m-b></td>
+                <td>非同期</td>
+                <td><m-b>待つ</m-b></td>
+                <td>待たない</td>
+            </tr>
+            <tr>
+                <td><m-b>remote_write</m-b></td>
+                <td>同期</td>
+                <td><m-b>待つ</m-b></td>
+                <td><m-b>メモリ</m-b>への書き込みまで待つ</td>
+            </tr>
+            <tr>
+                <td><m-b>on</m-b></td>
+                <td>同期</td>
+                <td><m-b>待つ</m-b></td>
+                <td><m-b>ディスク</m-b>への書き込みまで待つ</td>
+            </tr>
+            <tr>
+                <td><m-b>remote_apply</m-b></td>
+                <td>同期</td>
+                <td><m-b>待つ</m-b></td>
+                <td><m-b>WAL</m-b>が適用されるまで待つ</td>
+            </tr>
+        </tbody>
+    </table>
+    <h4>複数のスタンバイ設定</h4>
+    <p>
+        どのスタンバイを同期として扱うかは、<m-b>プライマリ</m-b>のpostgresql.confの
+        パラメータ<m-b>synchronous_standby_names</m-b>で、
+        スタンバイを一意に特定する文字列を<m-b>カンマ</m-b>区切りで指定する。<br>
+        次に、パラメータの設定例をいくつか示す。
+    </p>
+    <h5>接続できた1番左のスタンバイを同期として扱う場合</h5>
+    <pre><code>
+<m-b>synchronous_standby_names = 'sby,sby2,sby3'</m-b>
+    </code></pre>
+    <h5>先頭から2つのスタンバイを同期として扱う場合</h5>
+    <pre><code>
+<m-b>synchronous_standby_names = 'FIRST 2 (sby,sby2,sby3)'</m-b>
+    </code></pre>
+    <h5>いずれか2つのスタンバイを同期として扱う場合</h5>
+    <pre><code>
+<m-b>synchronous_standby_names = 'ANY 2 (sby,sby2,sby3)'</m-b>
+    </code></pre>
+    <p>
+        なお、synchronous_standby_namesが空白の場合、<m-b>どのスタンバイも同期として扱わない</m-b>として解釈されるため、注意が必要である。
+        スタンバイを一意に特定する文字列は、<m-b>各スタンバイ</m-b>のpostgresql.confでパラメータ<m-b>primary_conninfo</m-b>に
+        <m-b>application_name</m-b>を含めて設定する。
+        次に、ユーザ=postgres、ポート番号=5432、スタンバイを一意に特定する文字列=sbyとしてパラメータを指定する例を示す。
+    </p>
+    <pre><code>
+<m-b>primary_conninfo = 'user=postgres port=5432 application_name=sby'</m-b>
+    </code></pre>
+
+    <h3>レプリケーションの状況確認</h3>
+    <ul>
+        <li>
+            <b><m-b>サーバーログ</m-b>の確認</b><br>
+            プライマリとスタンバイのサーバーログにレプリケーションの開始ログが出力されていることを確認する。
+        </li>
+        <li>
+            <b><m-b>プロセス</m-b>の確認</b><br>
+            プライマリではwalsenderプロセス、スタンバイではwalreceiverプロセスが起動していることを<m-b>ps</m-b>コマンドなどを使って確認する。
+        </li>
+        <li>
+            <b><m-b>レプリケーション遅延</m-b>の確認</b><br>
+            プロセスが正常に動作していることを、<m-b>pg_stat_replication</m-b>ビューを見て確認する。
+            pg_stat_replicationビューは次のカラムを持つ。
+            <table>
+                <thead>
+                    <tr>
+                        <th>カラム</th>
+                        <th>説明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><m-b>application_name</m-b></td>
+                        <td>スタンバイを特定する文字列</td>
+                    </tr>
+                    <tr>
+                        <td><m-b>state</m-b></td>
+                        <td>プライマリの状態</td>
+                    </tr>
+                    <tr>
+                        <td><m-b>sent_lsn</m-b></td>
+                        <td>プライマリが送信したLSN</td>
+                    </tr>
+                    <tr>
+                        <td><m-b>write_lsn</m-b></td>
+                        <td>バッファへの書き込みが完了したLSN</td>
+                    </tr>
+                    <tr>
+                        <td><m-b>flush_lsn</m-b></td>
+                        <td>同期書き込みが完了したLSN</td>
+                    </tr>
+                    <tr>
+                        <td><m-b>replay_lsn</m-b></td>
+                        <td>WALの適用が完了したLSN</td>
+                    </tr>
+                    <tr>
+                        <td><m-b>sync_state</m-b></td>
+                        <td>スタンバイの同期状態</td>
+                    </tr>
+                </tbody>
+            </table>
+            <br>
+            なお、LSNを比較する場合は、差分を出力する関数<m-b>pg_wal_lsn_diff</m-b>を用いるとよい。<br>
+            pg_stat_replicationビューは、プライマリから接続するスタンバイの情報を各行に出力するが、<m-b>カスケード接続</m-b>には対応していない。
+            その場合、walreceiverが存在する各サーバで確認する必要がある。
+        </li>
+    </ul>
+
+    <h3>レプリケーションの管理</h3>
+    <p>
+        プライマリが停止した場合に、スタンバイを昇格する方法は次の3つがある。
+    </p>
+    <ul>
+        <li>パラメータ<m-b>promote_trigger_file</m-b>を用いる方法</li>
+        <li>コマンド<m-b>pg_ctl promote</m-b>を用いる方法</li>
+        <li>関数<m-b>pg_promote</m-b>を用いる方法</li>
+    </ul>
+    <h4>promote_trigger_fileを用いる</h4>
+    <p>
+        <m-b>スタンバイ</m-b>のpostgre.sqlでパラメータpromote_trigger_fileを設定している場合、
+        ファイルを生成することで昇格処理がなされる。
+        PostgreSQL11以前では、<m-b>スタンバイ</m-b>のrecovery.confでパラメータ<m-b>trigger_file</m-b>を設定することでも同様の操作ができる。
+        promote_trigger_fileには任意のファイルパスを指定でき、そのファイルパスにファイルが作成されると昇格処理が行われる。
+    </p>
+    <h4>pg_promoteを用いる</h4>
+    <p>
+        <m-b>スーパユーザ</m-b>権限で関数pg_promoteを実行すると、昇格処理がなされる。
+        pg_promoteは引数、<m-b>Boolean</m-b>型の<m-b>wait</m-b>と<m-b>Integer</m-b>型の<m-b>wait_seconds</m-b>を
+        受け取り、デフォルトは<m-b>wait=true</m-b>、<m-b>wait_seconds=60</m-b>である。
+        これは、完了するのを<m-b>60</m-b>秒待ち、処理が成功すれば<m-b>True</m-b>、失敗すれば<m-b>False</m-b>を返す。
+        なお、wait=Falseとする場合、処理の成否にかかわらず<m-b>True</m-b>を返す。
+    </p>
+    <h4>タイムラインID</h4>
+    <p>
+        昇格したスタンバイは、<m-b>タイムラインID</m-b>が1つ繰り上がる。
+        タイムラインIDは、バックアップからのリカバリ時に過去の任意の時点に戻すことができるメリットがあるが、
+        レプリケーションにおいてはプライマリとスタンバイが同じタイムラインIDを持つ必要がある。
+        通常、<m-b>スタンバイ</m-b>のpostgresql.confのパラメータ<m-b>recovery_target_timeline</m-b>に<m-b>latest</m-b>を指定し、
+        タイムラインの変更に追従してレプリケーションを行う設定とする。
+    </p>
+
+    <h3>ストリーミングレプリケーションの設定手順まとめ</h3>
+    <h4>サーバ情報</h4>
+    <ul>
+        <li>プライマリ</li>
+        <ul>
+            <li>ホスト名: prm</li>
+            <li>IPアドレス: 192.168.2.11</li>
+        </ul>
+        <li>スタンバイ</li>
+        <ul>
+            <li>ホスト名: sby</li>
+            <li>IPアドレス: 192.168.2.12</li>
+        </ul>
+    </ul>
+    <h4>設定手順</h4>
+    <ol>
+        <li>
+            <b>プライマリの設定</b>
+            <h5>postgresql.conf</h5>
+            <pre><code>
+wal_level = <m-b>'replica'</m-b>
+max_wal_senders = 10
+archive_mode = <m-b>on</m-b>
+archive_command = <m-b>'cp %p /tmp/%f'</m-b>
+synchronous_standby_names = <m-b>'sby'</m-b>
+            </code></pre>
+            <h5>pg_hba.conf</h5>
+            <pre><code>
+<m-b>host replication postgres 192.168.2.12/32 trust</m-b>
+            </code></pre>
+        </li>
+        <li>
+            <b>スタンバイのデータベースクラスタを用意</b>
+            <h5>pg_basebackupコマンドによるデータベースクラスタのコピー</h5>
+            <pre><code>
+<m-b>pg_basebackup -R -D ${PGDATA} -h prm -p 5432</m-b>
+            </code></pre>
+        </li>
+        <li>
+            <b>スタンバイの設定変更</b>
+            <p>
+                スタンバイの設定を変更する場合、postgresql.confやpg_hba.confを変更する。
+                また、スタンバイとして起動するために<m-b>standby.signal</m-b>ファイルを作成する。<br>
+                なお、前述のpg_basebackupコマンドで<m-b>-R</m-b>オプションを指定する場合、
+                <m-b>postgresql.auto.conf</m-b>にレプリケーション人必要な接続情報が記録され、
+                自動的に<m-b>standby.signal</m-b>ファイルがデータベースクラスタ配下に作成される。
+            </p>
+        </li>
+        <li>
+            <b>動作確認</b>
+            <p>
+                <m-b>ログ</m-b>、<m-b>プロセス</m-b>の確認や、<m-b>pg_stat_replication</m-b>ビューの確認を行う。
+            </p>
+        </li>
+    </ol>
+
+    <h3>PostgreSQLで構成できる3つのスタンバイ</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>スタンバイ</th>
+                <th>状態</th>
+                <th>メリット</th>
+                <th>デメリット</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>コールドスタンバイ</m-b></td>
+                <td>停止している</td>
+                <td class="wrappable">運用が比較的楽である</td>
+                <td><m-b>SPOF</m-b>が存在し、資源を無駄に使用するなどコストがかかる</td>
+            </tr>
+            <tr>
+                <td><m-b>ウォームスタンバイ</m-b></td>
+                <td>起動している</td>
+                <td class="wrappable">特別な装置などが不要で構築できる</td>
+                <td>非同期が前提となる直近のデータを参照できない</td>
+            </tr>
+            <tr>
+                <td><m-b>ホットスタンバイ</m-b></td>
+                <td>起動している</td>
+                <td class="wrappable">できる限り直近のデータを参照可能で、スタンバイの資源を最大限活用できる</td>
+                <td>同期のズレを意識した運用が必要となる</td>
+            </tr>
+        </tbody>
+    </table>
+    <h4>コールドスタンバイ</h4>
+    <p>
+
+    </p>
+    <h4>ウォームスタンバイ</h4>
+    <p>
+        
+    </p>
+    <h4>ホットスタンバイ</h4>
+    <p>
+        
+    </p>
 
     <h2>その他調査まとめ</h2>
 
@@ -3479,8 +3757,7 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         </a>
     </blockquote>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"
-        integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
+    <script src="./asset/jquery-3.7.1.slim.min.js"></script>
     <script src="./asset/script.js"></script>
 </body>
 
