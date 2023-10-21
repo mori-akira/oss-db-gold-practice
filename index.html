@@ -3337,35 +3337,35 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
             </tr>
         </thead>
         <tbody>
-            <tbody>
-                <tr>
-                    <td rowspan="4">postgresql.conf</td>
-                    <td><m-b>wal_level</m-b></td>
-                    <td><m-b>replica</m-b></td>
-                    <td><m-b>replica</m-b></td>
-                </tr>
-                <tr>
-                    <td><m-b>max_wal_senders</m-b></td>
-                    <td><m-b>1以上</m-b></td>
-                    <td><m-b>10</m-b></td>
-                </tr>
-                <tr>
-                    <td><m-b>archive_mode</m-b></td>
-                    <td><m-b>on</m-b></td>
-                    <td><m-b>off</m-b></td>
-                </tr>
-                <tr>
-                    <td><m-b>archive_command</m-b></td>
-                    <td><m-b>WALをアーカイブ領域に移すコマンド</m-b></td>
-                    <td><m-b>空文字</m-b></td>
-                </tr>
-                <tr>
-                    <td><m-b>pg_hba.conf</m-b></td>
-                    <td colspan="3">
-                        database列に<m-b>"replication"</m-b>
-                    </td>
-                </tr>
-            </tbody>
+        <tbody>
+            <tr>
+                <td rowspan="4">postgresql.conf</td>
+                <td><m-b>wal_level</m-b></td>
+                <td><m-b>replica</m-b></td>
+                <td><m-b>replica</m-b></td>
+            </tr>
+            <tr>
+                <td><m-b>max_wal_senders</m-b></td>
+                <td><m-b>1以上</m-b></td>
+                <td><m-b>10</m-b></td>
+            </tr>
+            <tr>
+                <td><m-b>archive_mode</m-b></td>
+                <td><m-b>on</m-b></td>
+                <td><m-b>off</m-b></td>
+            </tr>
+            <tr>
+                <td><m-b>archive_command</m-b></td>
+                <td><m-b>WALをアーカイブ領域に移すコマンド</m-b></td>
+                <td><m-b>空文字</m-b></td>
+            </tr>
+            <tr>
+                <td><m-b>pg_hba.conf</m-b></td>
+                <td colspan="3">
+                    database列に<m-b>"replication"</m-b>
+                </td>
+            </tr>
+        </tbody>
         </tbody>
     </table>
     <h4>walreceiverプロセスで必要な設定</h4>
@@ -3682,16 +3682,32 @@ synchronous_standby_names = <m-b>'sby'</m-b>
     </table>
     <h4>コールドスタンバイ</h4>
     <p>
-
+        最も運用方法がシンプルな構成。
+        プライマリとスタンバイが1つの<m-b>データ</m-b>を共有するため、切り替えてもデータの消失が発生することはない。
+        また、通常はプライマリのみが起動していて、データベース運用はプライマリに対してのみ行えばよい。
+        障害時は、スタンバイを起動するのみでよい。<br>
+        一方、コールドスタンバイではスタンバイに対する<m-b>参照クエリ</m-b>が実行できなない。
+        また、通常時にもスタンバイサーバ機を起動する必要があったり、<m-b>共有ディスク</m-b>など高額なディスク装置が必要であったり、
+        コスト面の制約がある。<br>
+        最も大きな制約は、共有ディスクが<m-b>SPOF</m-b>(<m-b>Single Point of Failure</m-b>:<m-b>単一障害点</m-b>)となることである。
+        これを回避するためのディスクやファイルシステムに対する信頼性向上施策が考えられるが、コスト/運用面のインパクトが大きくなる。
     </p>
     <h4>ウォームスタンバイ</h4>
     <p>
-        
+        ストリーミングレプリケーションの<m-b>同期モード</m-b>と<m-b>非同期モード</m-b>で実現が可能。
+        特別な装置やサードパーティアプリケーションがなくとも、PostgreSQL本体(および<m-b>contrib</m-b>モジュール)の機能で実現できることは、
+        大きなメリットといえる。<br>
+        非同期で実現する場合、データ損失につながるデメリットもあるが、スタンバイの応答を待たなくてよいメリットも存在する。
+        このため、<m-b>災害対策用</m-b>にウォームスタンバイを遠隔地に配置するケースがある。
     </p>
     <h4>ホットスタンバイ</h4>
     <p>
-        
+        ホットスタンバイは、コールドスタンバイとウォームスタンバイの良いところを兼ね備えている。
+        特別な装置は不要で、データ損失のリスクもほとんどない。
+        スタンバイに<m-b>参照クエリ</m-b>を実行できるため、<m-b>同期モード</m-b>でのストリーミングレプリケーションが前提となる。
     </p>
+
+    <h3>ホットスタンバイ</h3>
 
     <h2>その他調査まとめ</h2>
 
@@ -3754,6 +3770,17 @@ synchronous_standby_names = <m-b>'sby'</m-b>
     <blockquote>
         <a href="https://www.postgresql.jp/docs/12/app-pgresetwal.html" target="_blank">
             pg_resetwal
+        </a>
+    </blockquote>
+
+    <h3>contribモジュール</h3>
+    <p>
+        限られたユーザ向けであったり、実験的すぎたりして、PostgreSQL本体に取り込まれていないモジュールのこと。
+        contribモジュールは<m-b>contrib</m-b>ディレクトリに格納されている。
+    </p>
+    <blockquote>
+        <a href="https://www.postgresql.jp/document/15/html/contrib.html" target="_blank">
+            付録F 追加で提供されるモジュール
         </a>
     </blockquote>
 
