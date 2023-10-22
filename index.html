@@ -3901,7 +3901,9 @@ synchronous_standby_names = <m-b>'sby'</m-b>
         <thead>
             <tr>
                 <th>パラメータ</th>
-                <th><nobr>最小単位</nobr></th>
+                <th>
+                    <nobr>最小単位</nobr>
+                </th>
                 <th>説明</th>
             </tr>
         </thead>
@@ -3926,7 +3928,9 @@ synchronous_standby_names = <m-b>'sby'</m-b>
             <tr>
                 <th>パラメータ</th>
                 <th>設定先</th>
-                <th><nobr>デフォルト値</nobr></th>
+                <th>
+                    <nobr>デフォルト値</nobr>
+                </th>
                 <th>説明</th>
             </tr>
         </thead>
@@ -3977,6 +3981,142 @@ synchronous_standby_names = <m-b>'sby'</m-b>
         <li><m-b>ロジカルデコーディング</m-b></li>
         <li><m-b>バックグラウンドワーカ</m-b></li>
     </ul>
+    <h4>論理レプリケーションの制限事項</h4>
+    <p>
+        論理レプリケーションの出力プラグインとして、<m-b>pgoutput</m-b>が使用される。
+        このモジュールは<m-b>DML</m-b>と<m-b>TRUNCATE</m-b>のみに対応していて、その他の処理は基本的にレプリケーションすることができない。
+        また、<m-b>UPDATE</m-b>と<m-b>DELETE</m-b>については、事前に<m-b>REPLICA IDENTITY</m-b>を設定する必要がある。
+        これは、外部システムで更新/削除する行を特定するために利用するキーで、テーブル単位で指定する。
+        ALTER TABLE文で指定する場合、次のように指定する。
+    </p>
+    <pre><code>
+ALTER TABLE テーブル名 <m-b>REPLICA IDENTITY 設定値</m-b>;
+    </code></pre>
+    <p>
+        設定値としては、次表に示すキーワードを指定できる。
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>キーワード</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>DEFAULT</m-b></td>
+                <td>主キー</td>
+            </tr>
+            <tr>
+                <td><m-b>USING INDEX インデックス名</m-b></td>
+                <td>指定したインデックス(<m-b>ユニーク</m-b>かつ<m-b>NOT NULL</m-b>)</td>
+            </tr>
+            <tr>
+                <td><m-b>FULL</m-b></td>
+                <td>行全体をキーとする</td>
+            </tr>
+            <tr>
+                <td><m-b>NOTHING</m-b></td>
+                <td>キーを使用しない</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>パブリケーションとサブスクリプション</h3>
+    <p>
+        ストリーミングレプリケーションでは、送信/受信の役割が明確のため、プライマリ/スタンバイという呼び方をするが、
+        論理レプリケーションでは各サーバで読み込みと書き込みを行うため、<m-b>パブリッシャ</m-b>/<m-b>サブスクライバ</m-b>という呼び方をする。<br>
+        パブリッシャが公開(<m-b>パブリケーション</m-b>)する情報を、サブスクライバが購読(<m-b>サブスクリプション</m-b>)することで、レプリケーションを実現する。
+        パブリッシャとして<m-b>walsender</m-b>プロセスを、サブスクライバとして<m-b>logical replication worker</m-b>プロセスを起動する。
+        これらのプロセスを起動するため、次表のようなパラメータを設定する。
+        なお、ストリーミングレプリケーションと同様に、<m-b>パブリッシャ</m-b>側のpostgresql.confのパラメータ<m-b>synchronous_standby_names</m-b>に<m-b>サブスクリプション名</m-b>を指定することで、
+        同期モードで論理レプリケーションできる。
+    </p>
+    <h4>パブリッシャの設定</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>ファイル</th>
+                <th>パラメータ</th>
+                <th>設定値</th>
+                <th>デフォルト値</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="3">postgresql.conf</td>
+                <td><m-b>wal_level</m-b></td>
+                <td><m-b>logical</m-b></td>
+                <td><m-b>replica</m-b></td>
+            </tr>
+            <tr>
+                <td><m-b>max_replication_slots</m-b></td>
+                <td><m-b>2以上</m-b></td>
+                <td><m-b>10</m-b></td>
+            </tr>
+            <tr>
+                <td><m-b>max_wal_senders</m-b></td>
+                <td><m-b>2以上</m-b></td>
+                <td><m-b>10</m-b></td>
+            </tr>
+            <tr>
+                <td><m-b>pg_hba.conf</m-b></td>
+                <td colspan="3">
+                    <m-b>サブスクライバ</m-b>からの接続を許可
+                </td>
+            </tr>
+            <tr>
+                <td>コマンド</td>
+                <td colspan="3">
+                    公開するテーブルの指定<br>
+                    すべてのテーブルを公開する場合:<m-b>CREATE PUBLICATION パブリケーション名 FOR ALL TABLES;</m-b>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <h4>サブスクライバの設定</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>ファイル</th>
+                <th>パラメータ</th>
+                <th>設定値</th>
+                <th>デフォルト値</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="4">postgresql.conf</td>
+                <td><m-b>max_replication_slots</m-b></td>
+                <td><m-b>1以上</m-b></td>
+                <td><m-b>10</m-b></td>
+            </tr>
+            <tr>
+                <td><m-b>max_sync_workers_per_subscription</m-b></td>
+                <td><m-b>1以上</m-b></td>
+                <td><m-b>2</m-b></td>
+            </tr>
+            <tr>
+                <td><m-b>max_logical_replication_workers</m-b></td>
+                <td><m-b>2以上</m-b></td>
+                <td><m-b>4</m-b></td>
+            </tr>
+            <tr>
+                <td><m-b>max_worker_processes</m-b></td>
+                <td><m-b>3以上</m-b></td>
+                <td><m-b>8</m-b></td>
+            </tr>
+            <tr>
+                <td>コマンド</td>
+                <td colspan="3">
+                    接続情報及び購読する公開情報の指定<br>
+                    <m-b>CREATE SUBSCRIPTION サブスクリプション名<br>CONNECTION 接続情報 PUBLICATION パブリケーション名;</m-b>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>可能なレプリケーション構成</h3>
 
     <h2>その他調査まとめ</h2>
 
