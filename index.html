@@ -4221,6 +4221,77 @@ psql testdb -c "<m-b>CREATE SUBSCRIPTION mysub CONNECTION 'dbname=testdb host=pu
     </ol>
 
     <h3>論理レプリケーションの運用</h3>
+    <p>
+        論理レプリケーションでは、サブスクリプション側でもデータ更新が可能なため、<m-b>コンフリクト</m-b>が発生する可能性がある。
+        これが発生すると、<m-b>サーバログ</m-b>が出力され<m-b>レプリケーションは停止</m-b>する。
+        この解決方法は、次の2つが考えられる。
+    </p>
+    <ol>
+        <li>
+            <b>サブスクライバ側でコンフリクトしたデータを<m-b>削除</m-b>する</b><br>
+            ログなどを参照し、該当する行を削除する。
+        </li>
+        <li>
+            <b>サブスクライブ側の操作をサブスクライバ側で<m-b>スキップ</m-b>する</b><br>
+            サブスクライバ側で、コンフリクトが発生したパブリッシャの<m-b>サーバ名</m-b>と、スキップ後の<m-b>LSN</m-b>を指定し、
+            関数<m-b>pg_replication_origin_advance</m-b>を実行する。
+            パブリッシャのサーバ名は、ビュー<m-b>pg_replication_origin_status</m-b>のカラム<m-b>external_id</m-b>の値を参照する。
+            スキップ後のLSNは、一度パブリッシャにアクセスし、関数<m-b>pg_current_wal_lsn</m-b>などで取得する。
+        </li>
+    </ol>
+
+    <h2>13章 オンライン物理バックアップ</h2>
+
+    <h3>オンライン物理バックアップの仕組み</h3>
+    <p>
+        オンライン物理バックアップでは、関数<m-b>pg_start_backup</m-b>と<m-b>pg_stop_backup</m-b>で静止点を作って、ベースバックアップを取得する。
+        また、定期的にWALファイルをWAL領域から<m-b>アーカイブ</m-b>領域に転送するように、パラメータ<m-b>archive_command</m-b>を設定する。
+    </p>
+
+    <h3>pg_basebackupコマンドのメリット</h3>
+    <p>
+        pg_basebackupコマンドを用いることで、関数<m-b>pg_start_backup</m-b>と<m-b>pg_stop_backup</m-b>のみでは実現が面倒ないくつかの機能を利用できる。
+        例えば、NW送信量のチューニング(オプション<m-b>--max-rate</m-b>)や進捗状況の確認(オプション<m-b>--progress</m-b>)を指定できる。<br>
+        PostgreSQL11からは、データファイルの<m-b>チェックサム</m-b>を用いて、完全性を高めることができる。
+        データファイルに破損があると、コマンド実行時にエラーが発生する。
+    </p>
+
+    <h3>関数pg_start_backupの処理内容</h3>
+    <ol>
+        <li><m-b>共有メモリ</m-b>上のステータスを「バックアップ中」にする</li>
+        <li>WALを<m-b>スイッチ</m-b>する</li>
+        <li><m-b>チェックポイント</m-b>を発行し、そのLSNを保持する</li>
+        <li>3.のLSNを元にWALファイル名を特定し、<m-b>backup_label</m-b>ファイルに書き出す</li>
+        <li>LSNを返却する</li>
+    </ol>
+    <p>
+        1.は、複数のベースアップ取得が行われないようにするための措置である。
+        一方、pg_basebackupコマンド内では1.の処理がないため、pg_basebackupコマンドと並行して複数のベースバックアップが取得できる。(<m-b>非排他モード</m-b>)
+        関数pg_start_badkupでは、第3引数<m-b>exclusive</m-b>でこれを制御できる。
+        PostgreSQL14以降では、非排他モードの利用が推奨されている。<br>
+        また、関数pg_start_badkupの第2引数で、<m-b>チェックポイント</m-b>の挙動を制御できる。
+        trueを指定した場合、リソースやI/O処理をフル活用し、処理をできる限り早く行う。
+        falseを指定した場合、リソースやI/O処理をフル活用せず、実行時間は増えるが処理の負荷を軽減する。
+        やむを得ずサービス稼働中にバックアップを取得する必要があるときなどは、<m-b>false</m-b>で実行する。
+    </p>
+
+    <h3>関数pg_stop_backupの処理内容</h3>
+    <ol>
+        <li><m-b>共有メモリ</m-b>上のステータスを元に戻す</li>
+        <li>ファイル<m-b>backup_label</m-b>を読み込み、LSNを取得する</li>
+        <li>2.のLSNを含む<m-b>WALレコード</m-b>を書き出す</li>
+        <li>WALを<m-b>スイッチ</m-b>する</li>
+        <li><m-b>バックアップ履歴ファイル</m-b>を書き出す</li>
+        <li>4.と5.のWALファイルがアーカイブされるのを待機する</li>
+        <li>3.のWALレコードの書き出し位置(LSN)を返却する</li>
+    </ol>
+
+    <h3>WALアーカイブの流れ</h3>
+    <p>
+        <m-b>WALバッファ</m-b>が<m-b>16MB</m-b>でいっぱいになる、もしくはWALの<m-b>スイッチ</m-b>が発生すると、WALはアーカイブされる。
+        このとき、ディレクトリ<m-b>pg_wal/archive_status</m-b>配下に、
+        対象のWALファイルをアーカイブしてもよいことを示す<m-b>[WALファイル名].ready</m-b>というファイルが生成される。
+    </p>
 
     <h2>その他調査まとめ</h2>
 
@@ -4294,6 +4365,18 @@ psql testdb -c "<m-b>CREATE SUBSCRIPTION mysub CONNECTION 'dbname=testdb host=pu
     <blockquote>
         <a href="https://www.postgresql.jp/document/15/html/contrib.html" target="_blank">
             付録F 追加で提供されるモジュール
+        </a>
+    </blockquote>
+
+    <h3>LSNとWALファイル名</h3>
+    <p>
+        次にWALファイルを書き出すLSNは、関数<m-b>pg_current_wal_insert_lsn</m-b>で取得できる。
+        また、具体的なWALファイル名は、関数<m-b>pg_walfile_name</m-b>で取得できる。
+        この関数は、引数にLSNの文字列を渡すため、組み合わせて使用する。
+    </p>
+    <blockquote>
+        <a href="https://www.postgresql.jp/document/10/html/functions-admin.html" target="_blank">
+            9.26. システム管理関数
         </a>
     </blockquote>
 
