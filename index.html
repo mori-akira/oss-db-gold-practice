@@ -4117,6 +4117,110 @@ ALTER TABLE テーブル名 <m-b>REPLICA IDENTITY 設定値</m-b>;
     </table>
 
     <h3>可能なレプリケーション構成</h3>
+    <p>
+        論理レプリケーションは、ストリーミングレプリケーションと同じく<m-b>1:n</m-b>の<m-b>マルチサブスクライバ</m-b>構成や
+        <m-b>カスケード</m-b>構成を取ることができる。
+        また、<m-b>n:1</m-b>で複数のデータベースからレプリケーションしたり、双方向の構成を取ることもできる。
+        双方向の場合、<m-b>コンフリクト</m-b>のリスクがあるため注意が必要となる。<br>
+        論理レプリケーションは、メジャーバージョンが異なるデータベース間であっても行うことができる。
+        そのため、<m-b>メジャーバージョンアップ</m-b>の手法として活用が期待できる。
+    </p>
+
+    <h3>レプリケーションの状況確認</h3>
+    <p>
+        ストリーミングレプリケーションと同様に、次の手順で動作確認ができる。
+    </p>
+    <ul>
+        <li><m-b>サーバログ</m-b>の確認</li>
+        <li><m-b>プロセス</m-b>の確認</li>
+        <li><m-b>レプリケーション遅延</m-b>の確認</li>
+    </ul>
+
+    <h3>論理レプリケーションの管理</h3>
+    <p>
+        論理レプリケーションでは、いずれのサーバも読み書きできる状態にあるため、故障時の昇格は必要ない。
+        同期モードの場合、パラメータ<m-b>synchronous_standby_names</m-b>の編集やリロードが必要だが、非同期モードの場合はそれも必要ない。
+        ただし、<m-b>レプリケーションスロット</m-b>の対応が必要となる。<br>
+        論理レプリケーションの整合性を保つため、サブスクリプションを開始する時点(<m-b>CREATE SUBSCRIPTION</m-b>を実行する時点)で、
+        自動的に<m-b>レプリケーションスロット</m-b>が作成される。
+        作成されたレプリケーションスロットの情報は、<m-b>pg_replication_slots</m-b>ビューで確認できる。
+        また、PostgreSQL14では、<m-b>pg_stat_replication_slots</m-b>ビューが追加され、管理がしやすくなっている。<br>
+        サブスクライバが故障した場合、レプリケーションスロットによって<m-b>パブリッシャ</m-b>側の<m-b>WAL</m-b>領域にログが残る。
+        復旧に時間が要する状況でこのログを削除したい場合、<m-b>pg_drop_replication_slot</m-b>関数でレプリケーションスロットを削除し、
+        <m-b>pg_create_replication_slots</m-b>関数でレプリケーションスロットを作成する手順を取る。
+    </p>
+
+    <h3>論理レプリケーションの設定手順まとめ</h3>
+    <h4>サーバ情報</h4>
+    <ul>
+        <li>パブリッシャ</li>
+        <ul>
+            <li>ホスト名: pub</li>
+            <li>IPアドレス: 172.31.12.110</li>
+            <li>対象データベース名: testdb</li>
+            <li>対象テーブル名: testtbl(i int primary key, j int)</li>
+        </ul>
+        <li>サブスクライバ</li>
+        <ul>
+            <li>ホスト名: sub</li>
+            <li>IPアドレス: 172.31.6.21</li>
+        </ul>
+    </ul>
+    <h4>設定手順</h4>
+    <ol>
+        <li>
+            <b>パブリッシャの設定</b>
+            <h5>postgresql.conf</h5>
+            <pre><code>
+wal_level = <m-b>'logical'</m-b>
+max_replication_slots = 10
+max_wal_senders = 10
+            </code></pre>
+            <h5>pg_hba.conf</h5>
+            <pre><code>
+<m-b>host testdb postgres 172.31.6.21/32 trust</m-b>
+            </code></pre>
+        </li>
+        <li>
+            <b>パブリッシャ側でパブリケーションを作成</b><br>
+            <pre><code>
+psql testdb -c "<m-b>CREATE PUBLICATION mypub FOR TABLE testtbl</m-b>"
+            </code></pre>
+        </li>
+        <li>
+            <b>サブスクライバの設定</b>
+            <h5>postgresql.conf</h5>
+            <pre><code>
+max_replication_slots = 10
+<m-b>max_sync_workers_per_subscription</m-b> = 2
+<m-b>max_logical_replication_workers</m-b> = 4
+<m-b>max_worker_processes</m-b> = 8
+            </code></pre>
+        </li>
+        <li>
+            <b>サブスクライバでデータベースとテーブルを作成</b><br>
+            <pre><code>
+<m-b>createdb testdb</m-b>
+psql testdb -c "CREATE TABLE testtbl(i int primary key, j int)"
+            </code></pre>
+        </li>
+        <li>
+            <b>サブスクライバでサブスクリプションを作成</b><br>
+            <pre><code>
+psql testdb -c "<m-b>CREATE SUBSCRIPTION mysub CONNECTION 'dbname=testdb host=pub' PUBLICATION mypub</m-b>"
+            </code></pre>
+        </li>
+        <li>
+            <b>動作確認</b><br>
+            <p>
+                <m-b>ログ</m-b>や<m-b>pg_stat_replication</m-b>ビュー、<m-b>pg_stat_replication_slots</m-b>ビュー、
+                <m-b>pg_stat_subscription</m-b>ビュー、<m-b>walsender</m-b>プロセス、<m-b>logical replication worker</m-b>プロセス
+                などの確認を行う。
+            </p>
+        </li>
+    </ol>
+
+    <h3>論理レプリケーションの運用</h3>
 
     <h2>その他調査まとめ</h2>
 
