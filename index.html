@@ -4291,7 +4291,136 @@ psql testdb -c "<m-b>CREATE SUBSCRIPTION mysub CONNECTION 'dbname=testdb host=pu
         <m-b>WALバッファ</m-b>が<m-b>16MB</m-b>でいっぱいになる、もしくはWALの<m-b>スイッチ</m-b>が発生すると、WALはアーカイブされる。
         このとき、ディレクトリ<m-b>pg_wal/archive_status</m-b>配下に、
         対象のWALファイルをアーカイブしてもよいことを示す<m-b>[WALファイル名].ready</m-b>というファイルが生成される。
+        アーカイバプロセスは、次のタイミングでこのファイルの存在を確認し、ファイルが存在すれば
+        パラメータ<m-b>archive_command</m-b>で定義したコマンドを実行する。
     </p>
+    <ul>
+        <li><m-b>60秒</m-b>間隔(パラメータ<m-b>archive_timeout</m-b>が指定されている場合)</li>
+        <li><m-b>PostgreSQLの停止時</m-b></li>
+    </ul>
+    <p>
+        アーカイブが完了したファイルは、<m-b>[WALファイル名].done</m-b>にリネームされる。
+        オンライン物理バックアップからリカバリを行う際は、アーカイブファイルは必要不可欠となる。
+        ビュー<m-b>pg_stat_archiver</m-b>を確認したり、ディレクトリ<m-b>arvhive_status</m-b>を直接確認するのもよい。
+    </p>
+
+    <h3>PITRの仕組み</h3>
+    <h4>リカバリの流れ</h4>
+    <ol>
+        <li><m-b>pg_control</m-b>ファイルを読み込む</li>
+        <li><m-b>postgresql.conf</m-b>を読み込む(PostgreSQL11以前は<m-b>recovery.conf</m-b>)</li>
+        <li><m-b>backup_label</m-b>を読み込む</li>
+        <li><m-b>pg_control</m-b>を更新し、<m-b>backup_label</m-b>を削除する</li>
+        <li>必要な<m-b>WALレコード</m-b>を繰り返し適用する</li>
+    </ol>
+    <p>
+        2.で読み込むパラメータは、<m-b>restore_command</m-b>、<m-b>recovery_target_time</m-b>などである。<br>
+        3.でLSNを読み取れない場合、<m-b>pg_control</m-b>の情報を元にリカバリを開始する。<br>
+        4.で、ファイルbackup_labelは<m-b>backup_label.old</m-b>にリネームされる。
+    </p>
+    <h4>pg_controlファイル</h4>
+    <p>
+        リカバリ時に参照されるpg_controlファイルは、ディレクトリ<m-b>grobal</m-b>配下に格納されている。
+        バイナリファイルのため、コマンド<m-b>pg_controldata</m-b>を用いて内容を確認する。
+        リカバリで用いられる<m-b>Latest checkpointing location</m-b>や<m-b>Minimum recovery ending location</m-b>、
+        現在のデータベースクラスタの状況を示す<m-b>Database cluster status</m-b>など、PostgreSQLの運用に関する情報をプロパティとして持つ。
+    </p>
+    <h4>リカバリで設定する3つの項目</h4>
+    <ol>
+        <li><m-b>スタンバイサーバ</m-b>の設定</li>
+        <li><m-b>アーカイブリカバリ</m-b>の設定</li>
+        <li><m-b>リカバリ対象</m-b>の設定</li>
+    </ol>
+    <h4>アーカイブリカバリの設定</h4>
+    <p>
+        アーカイブリカバリの設定では、3つのパラメータを設定する。<br>
+        1つ目は、再適用するWALファイルをアーカイブ領域からオンラインWAL領域にリストアするためのコマンドである<m-b>restore_command</m-b>である。
+        このコマンドでは、次のエスケープ文字が使用できる。
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th><nobr>エスケープ文字</nobr></th>
+                <th>意味</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>%p</m-b></td>
+                <td>データベースクラスタから対象のWALファイルまでの相対パス</td>
+            </tr>
+            <tr>
+                <td><m-b>%f</m-b></td>
+                <td>対象のWALファイル名</td>
+            </tr>
+            <tr>
+                <td><m-b>%r</m-b></td>
+                <td>リカバリ中のリスタートポイントのWALレコードを含むWALファイル名</td>
+            </tr>
+        </tbody>
+    </table>
+    <p>
+        2つ目は、リカバリ中のリスタートポイントのたびに実行するコマンドである<m-b>arvhive_cleanup_command</m-b>である。
+        不要なアーカイブファイルを消去する目的で使用する。
+        エスケープ文字<m-b>%r</m-b>を使用でき、コマンド<m-b>pg_archivecleanup</m-b>と併用して、アーカイブファイルを削除することができる。
+    </p>
+    <h4>リカバリ対象の設定</h4>
+    <p>
+        どの時点までリカバリするかを指定できる。
+        次のパラメータを設定することができる。
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>パラメータ</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>recovery_target_action</m-b></td>
+                <td>リカバリ完了後の動作を指定できる</td>
+            </tr>
+            <tr>
+                <td><m-b>recovery_target_timeline</m-b></td>
+                <td>任意のタイムライン上の特定の状態を指定する</td>
+            </tr>
+            <tr>
+                <td><m-b>recovery_target</m-b></td>
+                <td><m-b>immediate</m-b>というキーワードを指定すると、整合性が取れたタイミングでリカバリを停止する</td>
+            </tr>
+            <tr>
+                <td><m-b>recovery_target_lsn</m-b></td>
+                <td>指定したLSNでリカバリを停止する</td>
+            </tr>
+            <tr>
+                <td><m-b>recovery_target_time</m-b></td>
+                <td>指定した時間でリカバリを停止する</td>
+            </tr>
+            <tr>
+                <td><m-b>recovery_target_xid</m-b></td>
+                <td>指定したトランザクションIDでリカバリを停止する</td>
+            </tr>
+            <tr>
+                <td><m-b>recovery_target_inclusive</m-b></td>
+                <td>
+                    true(デフォルト値): <m-b>recovery_target_lsn</m-b>、<m-b>recovery_target_time</m-b>、<m-b>recovery_target_xid</m-b>
+                    に指定した値を含んだ場合にリカバリを停止する。<br>
+                    false: <m-b>recovery_target_lsn</m-b>、<m-b>recovery_target_time</m-b>、<m-b>recovery_target_xid</m-b>
+                    に指定した値を含まない場合にリカバリを停止する。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>recovery_target_name</m-b></td>
+                <td>
+                    リカバリを停止したいターゲット名(任意の文字列)を指定する<br>
+                    任意の文字列は、関数<m-b>pg_create_restore_point</m-b>で事前に設定できる。
+                    この関数は、WALレコードとして任意の文字列を埋め込む処理を行う。
+                    このため、コマンド<m-b>pg_waldump</m-b>で埋め込んだ文字列を確認できる。
+                </td>
+            </tr>
+        </tbody>
+    </table>
 
     <h2>その他調査まとめ</h2>
 
