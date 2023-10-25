@@ -4575,23 +4575,348 @@ pg_isready <m-b>-h ホスト名 -p 5432 -d データベース名</m-b>
         <thead>
             <tr>
                 <th>パラメータ</th>
-                <th>デフォルト値</th>
+                <th><nobr>デフォルト値</nobr></th>
                 <th>説明</th>
             </tr>
         </thead>
         <tbody>
             <tr>
                 <td><m-b>track_activities</m-b></td>
-                <td><m-b></m-b></td>
-                <td></td>
+                <td><m-b>on</m-b></td>
+                <td>各セッションで実行中のコマンドに関する情報と、そのコマンドの実行開始時刻の収集を有効にする</td>
             </tr>
             <tr>
                 <td><m-b>track_counts</m-b></td>
-                <td><m-b></m-b></td>
-                <td></td>
+                <td><m-b>on</m-b></td>
+                <td>データベースの活動についての統計情報の収集を有効にする</td>
             </tr>
         </tbody>
     </table>
+    <h4>負荷状況の統計に関するビュー</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>ビュー</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>pg_stat_database</m-b></td>
+                <td>
+                    データベースごとの統計情報を扱うビュー<br>
+                    <m-b>コミット</m-b>/<m-b>ロールバック</m-b>の回数、<m-b>キャッシュヒット率</m-b>、<m-b>デッドロック発生回数</m-b>などを確認できる。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>pg_stat_user_tables</m-b></td>
+                <td>
+                    各テーブルに対するアクセスの統計情報を扱うビュー
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>pg_statio_user_tables</m-b></td>
+                <td>
+                    各テーブルに対するI/Oの統計情報を扱うビュー
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>pg_statio_user_indexes</m-b></td>
+                <td>
+                    各インデックスに対するI/Oの統計情報を扱うビュー
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>pg_stat_activity</m-b></td>
+                <td>
+                    バックエンドプロセスに関する統計情報を扱うビュー
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>pg_locks</m-b></td>
+                <td>
+                    ロック待ちを起こしているプロセスなどの情報を扱うビュー
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <h4>pg_stat_databaseで扱う代表的な情報</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>カラム</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>xact_commit</m-b></td>
+                <td>コミット回数</td>
+            </tr>
+            <tr>
+                <td><m-b>xact_rollback</m-b></td>
+                <td>ロールバック回数</td>
+            </tr>
+            <tr>
+                <td><m-b>blks_read</m-b></td>
+                <td>共有バッファ以外からデータ読み込みを行った回数</td>
+            </tr>
+            <tr>
+                <td><m-b>blks_hit</m-b></td>
+                <td>共有バッファからデータ読み込みを行った回数</td>
+            </tr>
+        </tbody>
+    </table>
+    <h4>pg_stat_user_tablesで扱う代表的な情報</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>カラム</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>seq_scan</m-b></td>
+                <td>シーケンシャルスキャンの実施回数</td>
+            </tr>
+            <tr>
+                <td><m-b>last_seq_scan</m-b></td>
+                <td>最後にシーケンシャルスキャンが発生したタイムスタンプ</td>
+            </tr>
+            <tr>
+                <td><m-b>idx_scan</m-b></td>
+                <td>インデックススキャンの実施回数</td>
+            </tr>
+            <tr>
+                <td><m-b>last_idx_scan</m-b></td>
+                <td>最後にインデックススキャンが発生したタイムスタンプ</td>
+            </tr>
+            <tr>
+                <td><m-b>seq_tup_read</m-b></td>
+                <td>読み取りが行われた行数</td>
+            </tr>
+            <tr>
+                <td><m-b>n_tup_ins</m-b></td>
+                <td>挿入回数</td>
+            </tr>
+            <tr>
+                <td><m-b>n_tup_upd</m-b></td>
+                <td>更新回数</td>
+            </tr>
+            <tr>
+                <td><m-b>n_tup_del</m-b></td>
+                <td>削除回数</td>
+            </tr>
+            <tr>
+                <td><m-b>n_tup_hot_upd</m-b></td>
+                <td>HOTによる更新回数</td>
+            </tr>
+            <tr>
+                <td><m-b>n_live_tup</m-b></td>
+                <td>有効な行数</td>
+            </tr>
+            <tr>
+                <td><m-b>n_dead_tup</m-b></td>
+                <td>不要な行数</td>
+            </tr>
+            <tr>
+                <td><m-b>last_autovacuum</m-b></td>
+                <td>最後に自動バキュームが実行されたタイムスタンプ</td>
+            </tr>
+            <tr>
+                <td><m-b>last_autoanalyze</m-b></td>
+                <td>最後に自動アナライズが実行されたタイムスタンプ</td>
+            </tr>
+        </tbody>
+    </table>
+    <h4>pg_stat_activityで扱う代表的な情報</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>カラム</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>datname</m-b></td>
+                <td>接続しているデータベース名</td>
+            </tr>
+            <tr>
+                <td><m-b>backend_start</m-b></td>
+                <td>プロセスが起動したタイムスタンプ</td>
+            </tr>
+            <tr>
+                <td><m-b>xact_start</m-b></td>
+                <td>トランザクションが開始したタイムスタンプ</td>
+            </tr>
+            <tr>
+                <td><m-b>query_start</m-b></td>
+                <td>クエリを発行したタイムスタンプ</td>
+            </tr>
+            <tr>
+                <td><m-b>wati_event_type</m-b></td>
+                <td>処理待ちの状態</td>
+            </tr>
+            <tr>
+                <td><m-b>wait_event</m-b></td>
+                <td>処理待ちが発生した待機イベント</td>
+            </tr>
+            <tr>
+                <td><m-b>state</m-b></td>
+                <td>プロセスの状態</td>
+            </tr>
+            <tr>
+                <td><m-b>query_id</m-b></td>
+                <td>最後に実行したクエリの識別子</td>
+            </tr>
+            <tr>
+                <td><m-b>query</m-b></td>
+                <td>最後に実行したクエリのSQL文</td>
+            </tr>
+            <tr>
+                <td><m-b>backend_type</m-b></td>
+                <td>
+                    プロセスの種別<br>
+                    対象のプロセスがバックエンドプロセスの場合<m-b>client backend</m-b>、
+                    上記以外の場合<m-b>プロセス名</m-b>が表示される。
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <h4>pg_stat_activityのカラムstatが取る値</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>キーワード</th>
+                <th>状態</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>active</m-b></td>
+                <td>問い合わせ実行中</td>
+            </tr>
+            <tr>
+                <td><m-b>idle</m-b></td>
+                <td>トランザクション外でコマンド待ち</td>
+            </tr>
+            <tr>
+                <td><m-b>idle in transaction</m-b></td>
+                <td>トランザクション内でコマンド待ち</td>
+            </tr>
+            <tr>
+                <td><m-b>idle in transaction (aborted)</m-b></td>
+                <td>トランザクション内でエラー発生後、コマンド待ち</td>
+            </tr>
+            <tr>
+                <td><m-b>fastpath function call</m-b></td>
+                <td>関数呼び出し中(古い仕様のためあまり見ない)</td>
+            </tr>
+            <tr>
+                <td><m-b>disabled</m-b></td>
+                <td>無効(<m-b>track_activities</m-b>がoffで設定されている)</td>
+            </tr>
+        </tbody>
+    </table>
+    <h4>pg_locksが扱う情報</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>キーワード</th>
+                <th>状態</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>mode</m-b></td>
+                <td>ロックモードの名称</td>
+            </tr>
+            <tr>
+                <td><m-b>granted</m-b></td>
+                <td>ロックを保持している場合true、ロック待ちの場合false</td>
+            </tr>
+            <tr>
+                <td><m-b>waitstart</m-b></td>
+                <td>ロック待ちになった際のタイムスタンプ</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>15章 テーブルメンテナンス</h2>
+
+    <h3>バキュームの主な役割</h3>
+    <ul>
+        <li><m-b>不要領域の再利用</m-b></li>
+        <li><m-b>トランザクションIDの周回問題の回避</m-b></li>
+    </ul>
+
+    <h3>VACUUMの処理手順</h3>
+    <ol>
+        <li>各テーブルの<m-b>ページ</m-b>を先頭から走査する</li>
+        <li><m-b>VM</m-b>(<m-b>Visibility Map</m-b>)を確認して不要行を含むなら3.の処理に、なければ次のページを走査する</li>
+        <li>対象ページの全行を走査して不要行の情報を抽出する</li>
+        <li>全ページを走査後、不要行が抽出されていれば対象テーブルの<m-b>インデックス</m-b>をメンテナンスし、不要行を削除する</li>
+        <li>削除した行の情報をもとに<m-b>FSM</m-b>(<m-b>Free Space Map</m-b>)を更新する</li>
+    </ol>
+
+    <h3>VACUUMコマンドのオプション</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>オプション</th>
+                <th>効果</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>DISABLE_PAGE_SKIPPING</m-b></td>
+                <td>
+                   VMのチェックを無効化する<br>
+                   VMが不整合な状態になっている可能性がある場合に指定する。 
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>SKIP_LOCKED</m-b></td>
+                <td>
+                    テーブルが他のトランザクションからロックされている場合に、スキップする
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>INDEX_CLEANUP</m-b></td>
+                <td>
+                    不要行が少ない場合、インデックスのVACUUMはスキップされる仕様だが、1行でも不要行があれば削除を強制する
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>PARALLEL</m-b></td>
+                <td>
+                    インデックスのVACUUMを最大N並列で実行する<br>
+                    1つのテーブルに複数のインデックスが付与されている場合に効果がある。
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h3>Visibility Mapについて</h3>
+    <p>
+        VM(Visibility Map)は、テーブルの可視性の判断および<m-b>FREEZE処理</m-b>の判断に使用される補助データである。
+        テーブルの1ページの状態を<m-b>2ビット</m-b>で管理する。
+        ページ内のデータが完全に可視の場合<m-b>下位1ビットが1</m-b>、一部でも不可視の場合<m-b>下位1ビットが0</m-b>となる。
+        VACUUM処理では、VMの情報をもとに処理するページを絞ることで負荷の軽減を図っている。<br>
+        また、ページ内のデータが完全にFREEZE処理済みの場合<m-b>上位1ビットが1</m-b>、一部でも未処理の場合<m-b>上位1ビットが0</m-b>となる。
+        これにより、FREEZE処理の負荷の軽減を図っている。
+        滅多に更新されない巨大なテーブルに対しては、大きな効果がある。
+    </p>
+
+    <h3>Free Space Mapについて</h3>
+    <p>
+        FSM(Free Space Map)は、テーブルの<m-b>空き領域</m-b>の大きさを管理する補助データである。
+        1ページの空き領域量を<m-b>1バイト</m-b>で管理する。
+        これにより、空き領域の大きさを<m-b>256段階</m-b>に分けて管理している。
+        各ページの空き容量を調べる場合、contribモジュールの関数<m-b>pg_freespacemap</m-b>が使用できる。
+    </p>
 
     <h2>その他調査まとめ</h2>
 

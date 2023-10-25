@@ -23,7 +23,7 @@ h1 {
 h2 {
     display: block;
     position: relative;
-    margin: 3em  0 0 2.5rem;
+    margin: 3em 0 0 2.5rem;
     padding: 0 1rem;
     border-bottom: 5px double #333;
 }
@@ -66,6 +66,15 @@ h3::before {
     border: 1px solid #333;
     background-color: #00000022;
     transform: rotate(45deg);
+}
+
+summary {
+    padding-left: .5rem;
+    border-radius: .5rem;
+}
+
+summary:hover {
+    background-color: #00000010;
 }
 
 details>ul {
