@@ -69,8 +69,9 @@ h3::before {
 }
 
 summary {
-    padding-left: .5rem;
+    padding: .2rem .5rem;
     border-radius: .5rem;
+    cursor: pointer;
 }
 
 summary:hover {
