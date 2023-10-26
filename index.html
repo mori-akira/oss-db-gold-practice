@@ -4340,7 +4340,9 @@ psql testdb -c "<m-b>CREATE SUBSCRIPTION mysub CONNECTION 'dbname=testdb host=pu
     <table>
         <thead>
             <tr>
-                <th><nobr>エスケープ文字</nobr></th>
+                <th>
+                    <nobr>エスケープ文字</nobr>
+                </th>
                 <th>意味</th>
             </tr>
         </thead>
@@ -4404,7 +4406,8 @@ psql testdb -c "<m-b>CREATE SUBSCRIPTION mysub CONNECTION 'dbname=testdb host=pu
             <tr>
                 <td><m-b>recovery_target_inclusive</m-b></td>
                 <td>
-                    true(デフォルト値): <m-b>recovery_target_lsn</m-b>、<m-b>recovery_target_time</m-b>、<m-b>recovery_target_xid</m-b>
+                    true(デフォルト値):
+                    <m-b>recovery_target_lsn</m-b>、<m-b>recovery_target_time</m-b>、<m-b>recovery_target_xid</m-b>
                     に指定した値を含んだ場合にリカバリを停止する。<br>
                     false: <m-b>recovery_target_lsn</m-b>、<m-b>recovery_target_time</m-b>、<m-b>recovery_target_xid</m-b>
                     に指定した値を含まない場合にリカバリを停止する。
@@ -4575,7 +4578,9 @@ pg_isready <m-b>-h ホスト名 -p 5432 -d データベース名</m-b>
         <thead>
             <tr>
                 <th>パラメータ</th>
-                <th><nobr>デフォルト値</nobr></th>
+                <th>
+                    <nobr>デフォルト値</nobr>
+                </th>
                 <th>説明</th>
             </tr>
         </thead>
@@ -4873,8 +4878,8 @@ pg_isready <m-b>-h ホスト名 -p 5432 -d データベース名</m-b>
             <tr>
                 <td><m-b>DISABLE_PAGE_SKIPPING</m-b></td>
                 <td>
-                   VMのチェックを無効化する<br>
-                   VMが不整合な状態になっている可能性がある場合に指定する。 
+                    VMのチェックを無効化する<br>
+                    VMが不整合な状態になっている可能性がある場合に指定する。
                 </td>
             </tr>
             <tr>
@@ -4898,7 +4903,7 @@ pg_isready <m-b>-h ホスト名 -p 5432 -d データベース名</m-b>
             </tr>
         </tbody>
     </table>
-    
+
     <h3>Visibility Mapについて</h3>
     <p>
         VM(Visibility Map)は、テーブルの可視性の判断および<m-b>FREEZE処理</m-b>の判断に使用される補助データである。
@@ -4937,6 +4942,141 @@ pg_isready <m-b>-h ホスト名 -p 5432 -d データベース名</m-b>
             VACUUM関連のパラメータ<m-b>autovacuum_freeze_min_age</m-b>、<m-b>autovacuum_freeze_max_age</m-b>、<m-b>autovacuum_freeze_table_age</m-b>で制御する
         </li>
     </ul>
+    <p>
+        なお、現在のXIDより<m-b>5000万</m-b>以上古いXIDは、<m-b>VACUUM</m-b>時に回収されるため、基本的には意識しなくてもよい。
+        ただ、更新をほとんど行わないテーブルであれば、登録後にVACUUM FREEZEを行うことで運用中に発生するFREEZE処理の負荷を回避できる。<br>
+        通常のVACUUMはトランザクション処理の妨げとならないよう間欠的に実行されるが、XIDが上限に近づくとFREEZE処理を優先する。
+        上限にどの程度近づくと動作が切り替わるのかは、次のパラメータで制御する。
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>パラメータ</th>
+                <th>デフォルト値</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>vacuum_failsafe_age</m-b></td>
+                <td><m-b>16億</m-b></td>
+                <td>FREEZE処理を優先するrelfrozenxidの閾値</td>
+            </tr>
+            <tr>
+                <td><m-b>vacuum_multixact_failsafe_age</m-b></td>
+                <td><m-b>1億5000万</m-b></td>
+                <td>VACUUMがテーブルの積極的なスキャンを行うrelminmxidの閾値</td>
+            </tr>
+        </tbody>
+    </table>
+    <p>
+        周回問題に到達するまでに利用可能な残りのXIDが一定の数を下回ると、<m-b>警告メッセージ</m-b>を出力する。
+        この閾値は、PostgreSQL13までは<m-b>1100万</m-b>、PostgreSQL14では<m-b>4000万</m-b>である。
+    </p>
+    <h4>現在のトランザクションのXIDを確認するSQL</h4>
+    <pre><code>
+SELECT <m-b>txid_current()</m-b>;
+    </code></pre>
+    <h4>各テーブルに含まれる最も古いXIDから現在のXIDの差分を取得するSQL</h4>
+    <pre><code>
+SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
+    </code></pre>
+
+    <h3>自動バキュームによるメンテナンス</h3>
+    <h4>自動バキュームの設定に関する主なパラメータ</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>パラメータ</th>
+                <th>
+                    <nobr>デフォルト値</nobr>
+                </th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>autovacuum</m-b></td>
+                <td><m-b>on</m-b></td>
+                <td>自動バキュームを実行するか</td>
+            </tr>
+            <tr>
+                <td><m-b>log_autovacuum_min_duration</m-b></td>
+                <td><m-b>-1</m-b></td>
+                <td>
+                    自動バキュームが指定した時間を超過した場合にログを出力<br>
+                    単位:ミリ秒、無効:-1、すべて:0
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>autovacuum_max_workers</m-b></td>
+                <td><m-b>3</m-b></td>
+                <td>同時に実行する自動バキューム処理のワーカ数</td>
+            </tr>
+            <tr>
+                <td><m-b>autovacuum_naptime</m-b></td>
+                <td><m-b>1min</m-b></td>
+                <td>自動バキュームが必要なテーブルのチェックを行う間隔</td>
+            </tr>
+            <tr>
+                <td><m-b>autovacuum_vacuum_threshold</m-b></td>
+                <td><m-b>50</m-b></td>
+                <td>
+                    自動バキュームの起動に関する閾値<br>
+                    指定行数以上の更新・削除が発生した場合に起動する。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>autovacuum_vacuum_insert_threshold</m-b></td>
+                <td><m-b>1000</m-b></td>
+                <td>
+                    INSERT時の自動バキュームの起動に関する閾値<br>
+                    指定行数以上の挿入が発生した場合に起動する。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>autovacuum_vacuum_scale_factor</m-b></td>
+                <td><m-b>0.2</m-b></td>
+                <td>
+                    自動バキュームの起動に関する割合<br>
+                    デフォルトの場合、テーブルの20%が更新・削除された場合に起動する。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>autovacuum_vacuum_insert_scale_factor</m-b></td>
+                <td><m-b>0.2</m-b></td>
+                <td>
+                    INSERT時の自動バキュームの起動に関する割合<br>
+                    デフォルトの場合、テーブルの20%が挿入された場合に起動する。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>autovacuum_vacuum_cost_delay</m-b></td>
+                <td><m-b>2</m-b></td>
+                <td>
+                    自動バキュームの実行間隔<br>
+                    ms単位、-1指定時は<m-b>vacuum_cost_delay</m-b>の設定に従う。PostgreSQL11以前のデフォルト値は<m-b>20</m-b>。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>autovacuum_vacuum_cost_limit</m-b></td>
+                <td><m-b>-1</m-b></td>
+                <td>
+                    自動バキュームの1回あたりのコスト上限<br>
+                    自動バキュームワーカが並列に実行されている場合、各ワーカに均等にコストを振り分ける。
+                    -1指定時は、<m-b>vacuum_cost_limit</m-b>の設定に従う。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>autovacuum_work_mem</m-b></td>
+                <td><m-b>-1</m-b></td>
+                <td>
+                    自動バキュームワーカごとの最大メモリ数<br>
+                    -1指定時は、<m-b>maintenance_work_mem</m-b>の設定に従う。
+                </td>
+            </tr>
+        </tbody>
+    </table>
 
     <h2>その他調査まとめ</h2>
 
