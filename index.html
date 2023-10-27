@@ -5077,6 +5077,104 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
             </tr>
         </tbody>
     </table>
+    <h4>自動バキュームが開始する条件</h4>
+    <ul>
+        <li>
+            autovacuum_naptimeで指定した時間ごとに、更新/削除された件数が
+            <m-b>autovacuum_vacuum_threshold + autovacuum_vacuum_scale_factor * テーブルの行数</m-b>
+            を超過した場合
+        </li>
+        <li>
+            autovacuum_naptimeで指定した時間ごとに、挿入された件数が<m-b>autovacuum_vacuum_insert_threshold + autovacuum_vacuum_insert_scale_factor * テーブルの行数</m-b>
+            を超過した場合
+        </li>
+    </ul>
+    <h4>テーブルごとに自動バキュームを停止するSQL</h4>
+    <pre><code>
+<m-b>ALTER TABLE 対象テーブル SET (autovacuum_enabled = off)</m-b>;
+    </code></pre>
+
+    <h3>自動バキュームの進捗状況確認</h3>
+    <h4>pg_stat_progress_vacuumビューの情報</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>カラム</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>pid</m-b></td>
+                <td>自動バキュームワーカのプロセスID</td>
+            </tr>
+            <tr>
+                <td><m-b>datname</m-b></td>
+                <td>接続するデータベース名</td>
+            </tr>
+            <tr>
+                <td><m-b>relid</m-b></td>
+                <td>バキューム対象のテーブルのOID</td>
+            </tr>
+            <tr>
+                <td><m-b>phase</m-b></td>
+                <td>バキューム処理のフェーズ</td>
+            </tr>
+            <tr>
+                <td><m-b>heap_blks_scanned</m-b></td>
+                <td>スキャンされたヒープブロック数</td>
+            </tr>
+            <tr>
+                <td><m-b>heap_blks_vacuumed</m-b></td>
+                <td>バキューム処理されたヒープブロック数</td>
+            </tr>
+            <tr>
+                <td><m-b>index_vacuum_count</m-b></td>
+                <td>完了したインデックスバキュームサイクル数</td>
+            </tr>
+        </tbody>
+    </table>
+    <h4>自動バキュームの進捗状況のフェーズ</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>フェーズ</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>initializing</m-b></td>
+                <td>自動バキュームの初期化中</td>
+            </tr>
+            <tr>
+                <td><m-b>scanning heap</m-b></td>
+                <td>自動バキュームがテーブルのヒープデータをスキャン中</td>
+            </tr>
+            <tr>
+                <td><m-b>vacuuming indexes</m-b></td>
+                <td>テーブルに付与されたインデックスのバキューム中</td>
+            </tr>
+            <tr>
+                <td><m-b>vacuuming heap</m-b></td>
+                <td>ヒープデータのバキューム中</td>
+            </tr>
+            <tr>
+                <td><m-b>cleaning up indexes</m-b></td>
+                <td>インデックスの整理中</td>
+            </tr>
+            <tr>
+                <td><m-b>truncating heap</m-b></td>
+                <td>データのないヒープページの切り詰め中</td>
+            </tr>
+            <tr>
+                <td><m-b>performing final cleanup</m-b></td>
+                <td>FSMのバキュームとテーブル統計情報の更新中</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>VACUUM FULLによるメンテナンス</h3>
 
     <h2>その他調査まとめ</h2>
 
