@@ -4851,13 +4851,13 @@ pg_isready <m-b>-h ホスト名 -p 5432 -d データベース名</m-b>
 
     <h2>15章 テーブルメンテナンス</h2>
 
-    <h3>バキュームの主な役割</h3>
+    <h3>VACUUMによるメンテナンス</h3>
+    <h4>バキュームの主な役割</h4>
     <ul>
         <li><m-b>不要領域の再利用</m-b></li>
         <li><m-b>トランザクションIDの周回問題の回避</m-b></li>
     </ul>
-
-    <h3>VACUUMの処理手順</h3>
+    <h4>VACUUMの処理手順</h4>
     <ol>
         <li>各テーブルの<m-b>ページ</m-b>を先頭から走査する</li>
         <li><m-b>VM</m-b>(<m-b>Visibility Map</m-b>)を確認して不要行を含むなら3.の処理に、なければ次のページを走査する</li>
@@ -4865,8 +4865,7 @@ pg_isready <m-b>-h ホスト名 -p 5432 -d データベース名</m-b>
         <li>全ページを走査後、不要行が抽出されていれば対象テーブルの<m-b>インデックス</m-b>をメンテナンスし、不要行を削除する</li>
         <li>削除した行の情報をもとに<m-b>FSM</m-b>(<m-b>Free Space Map</m-b>)を更新する</li>
     </ol>
-
-    <h3>VACUUMコマンドのオプション</h3>
+    <h4>VACUUMコマンドのオプション</h4>
     <table>
         <thead>
             <tr>
@@ -5093,9 +5092,8 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
     <pre><code>
 <m-b>ALTER TABLE 対象テーブル SET (autovacuum_enabled = off)</m-b>;
     </code></pre>
-
-    <h3>自動バキュームの進捗状況確認</h3>
-    <h4>pg_stat_progress_vacuumビューの情報</h4>
+    <h4>自動バキュームの進捗状況確認</h4>
+    <h5>pg_stat_progress_vacuumビューの情報</h5>
     <table>
         <thead>
             <tr>
@@ -5134,7 +5132,7 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
             </tr>
         </tbody>
     </table>
-    <h4>自動バキュームの進捗状況のフェーズ</h4>
+    <h5>自動バキュームの進捗状況のフェーズ</h5>
     <table>
         <thead>
             <tr>
@@ -5175,6 +5173,159 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
     </table>
 
     <h3>VACUUM FULLによるメンテナンス</h3>
+    <h4>VACUUMが機能しないケース</h4>
+    <p>
+        <m-b>LongTransaction</m-b>が存在している場合はVACUUMが機能しない。
+        これは、トランザクションを開始後、コミットもロールバックもせずに長時間存在しているトランザクションである。
+        VACUUMによる再利用やFREEZE処理は、現在流れている最も若いXIDよりも<m-b>前のXIDを持つ</m-b>行が対象となる。
+        そのため、LongTransactionの開始後に更新/削除された行はバキューム処理がされない。
+    </p>
+    <h4>LongTransactionの確認/終了方法</h4>
+    <p>
+        LongTransactionを確認する場合、ビュー<m-b>pg_stat_activity</m-b>を確認する。
+        カラム<m-b>state</m-b>の値が<m-b>idele in transaction</m-b>となっている行のうち、カラム<m-b>xact_start</m-b>の値が大幅に古いプロセスは、
+        LongTransactionの疑いがある。
+        この場合、カラム<m-b>pid</m-b>からプロセスを特定し、関数<m-b>pg_cancel_backend()</m-b>や<m-b>pg_terminate_backend()</m-b>などでプロセスを終了する。
+    </p>
+    <h4>VACUUM FULL実行時の注意点</h4>
+    <p>
+        VACUUMとは異なり、VACUUM FULL実行時はテーブルに対し<m-b>ACCESS EXCLUSIVE</m-b>モードのロックを取得するため、テーブルに対する<m-b>参照/更新</m-b>が待たされる。<br>
+        VACUUM FULLは次の順で処理が行われる。
+    </p>
+    <ol>
+        <li>テーブルのデータを<m-b>1行</m-b>ずつ取得し、<m-b>別の新しいテーブル</m-b>に格納する</li>
+        <li>新しいテーブルに<m-b>インデックス</m-b>を作成する</li>
+        <li>テーブルを<m-b>入れ替える</m-b></li>
+    </ol>
+    <p>
+        このため、有効な行のみを新しいテーブルに格納し、不要領域は一切存在しなくなる。
+        ただし、一時的に対象テーブルと新しいテーブルが同時に作成されるため、容量不足で完遂できなことがある。<br>
+        テーブルメンテナンスは、自動バキュームや定期的なバキュームを行っていれば問題になることはないことを心がける。
+    </p>
+    <h4>VACUUM FULLの進捗状況確認</h4>
+    <p>
+        PostgreSQL12からVACUUM FULLの進捗状況も確認できるようになった。
+        ビュー<m-b>pg_stat_progress_cluster</m-b>で確認できる。
+        これは、<m-b>CLUSTER</m-b>コマンドの進捗状況も確認できる。
+    </p>
+    <h4>pg_stat_progress_clusterビューの情報</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>カラム</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>pid</m-b></td>
+                <td>バックエンドのプロセスID</td>
+            </tr>
+            <tr>
+                <td><m-b>datname</m-b></td>
+                <td>接続するデータベース名</td>
+            </tr>
+            <tr>
+                <td><m-b>relid</m-b></td>
+                <td>クラスタ対象のテーブルのOID</td>
+            </tr>
+            <tr>
+                <td><m-b>phase</m-b></td>
+                <td>クラスタ処理のフェーズ</td>
+            </tr>
+            <tr>
+                <td><m-b>heap_tuples_scanned</m-b></td>
+                <td>スキャンされたヒープタプル数</td>
+            </tr>
+            <tr>
+                <td><m-b>heap_tuples_written</m-b></td>
+                <td>書き込みが行われたヒープタプル数</td>
+            </tr>
+            <tr>
+                <td><m-b>heap_blks_total</m-b></td>
+                <td>テーブル内のヒープブロックの総数</td>
+            </tr>
+            <tr>
+                <td><m-b>heap_blks_scanned</m-b></td>
+                <td>スキャンされたヒープブロック数</td>
+            </tr>
+        </tbody>
+    </table>
+    <h4>VACUUM FULLの進捗状況のフェーズ</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>フェーズ</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>initializing</m-b></td>
+                <td>VACUUM FULL/CLUSTERの初期化中</td>
+            </tr>
+            <tr>
+                <td><m-b>seq scanning heap</m-b></td>
+                <td>シーケンシャルスキャンを用いてテーブルのヒープデータをスキャン中</td>
+            </tr>
+            <tr>
+                <td><m-b>index scanning heap</m-b></td>
+                <td>インデックススキャンを用いてテーブルのヒープデータをスキャン中</td>
+            </tr>
+            <tr>
+                <td><m-b>sorting tuples</m-b></td>
+                <td>インデックスに基づいてタプルデータをソート中</td>
+            </tr>
+            <tr>
+                <td><m-b>writing new heap</m-b></td>
+                <td>ソートしたタプルを新しいヒープデータとして書き込み中</td>
+            </tr>
+            <tr>
+                <td><m-b>swapping relation files</m-b></td>
+                <td>新しいヒープデータをテーブルに関連付け中</td>
+            </tr>
+            <tr>
+                <td><m-b>rebuilding index</m-b></td>
+                <td>インデックスの再構築中</td>
+            </tr>
+            <tr>
+                <td><m-b>performing final cleanup</m-b></td>
+                <td>古いヒープデータなどのクリーンアップ中</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>テーブル統計情報の更新</h3>
+    <p>
+        <m-b>プランナ</m-b>がより良い実行計画を作成するには、テーブルの更新に合わせて<m-b>統計情報</m-b>も更新する必要がある。
+    </p>
+    <h4>テーブル統計情報に関する主な設定</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>パラメータ</th>
+                <th>デフォルト値</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>default_statistics_target</m-b></td>
+                <td><m-b>100</m-b></td>
+                <td>テーブル統計情報を保持するエントリ数</td>
+            </tr>
+            <tr>
+                <td><m-b>autovacuum_analyze_threshold</m-b></td>
+                <td><m-b>50</m-b></td>
+                <td>テーブル統計情報実行の閾値</td>
+            </tr>
+            <tr>
+                <td><m-b>autovacuum_analyze_scale_factor</m-b></td>
+                <td><m-b>0.1</m-b></td>
+                <td>テーブル統計情報実行に関する割合</td>
+            </tr>
+        </tbody>
+    </table>
 
     <h2>その他調査まとめ</h2>
 
