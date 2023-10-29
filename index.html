@@ -5672,6 +5672,54 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
         </tbody>
     </table>
 
+    <h3>システムカタログ pg_statistic とシステムビュー pg_stats </h3>
+    <p>
+        収集した統計情報は、自動/手動を問わず<m-b>pg_statistic</m-b>に格納される。
+        このテーブルでは、列ごとに統計情報が格納され、<m-b>プランナ</m-b>がコストを計算する際に使用する。
+        このテーブルを参照できるのは、<m-b>スーパーユーザ</m-b>のみである。
+        一般ユーザは<m-b>pg_stats</m-b>を参照することができ、同じ列ごとの統計情報が表示される。
+    </p>
+    <h4>pg_statisticの主な項目</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>カラム</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>starelid</m-b></td>
+                <td>対象のテーブルのoid</td>
+            </tr>
+            <tr>
+                <td><m-b>staattnum</m-b></td>
+                <td>対象カラムに紐づく番号</td>
+            </tr>
+            <tr>
+                <td><m-b>stainherit</m-b></td>
+                <td>
+                    当該の統計情報が継承テーブルのデータを含むかどうか<br>
+                    継承テーブルを持つテーブルの場合、2つの統計情報が作成される(プランナは問い合わせによって2つの統計情報を使い分けている)
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>stanullfrac</m-b></td>
+                <td>NULL値である列の割合</td>
+            </tr>
+            <tr>
+                <td><m-b>stawidth</m-b></td>
+                <td>非NULL値による平均列長</td>
+            </tr>
+            <tr>
+                <td><m-b>stadistinct</m-b></td>
+                <td>カーディナリティ</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>実行計画を自動生成する拡張モジュール auto_explain</h3>
+
     <h2>18章 パフォーマンスチューニング</h2>
 
     <h2>その他調査まとめ</h2>
