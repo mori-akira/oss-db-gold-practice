@@ -5334,6 +5334,198 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
         </tbody>
     </table>
     <h4>pg_stat_progress_analyzeビューの情報</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>カラム</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>pid</m-b></td>
+                <td>バックエンドのプロセスID</td>
+            </tr>
+            <tr>
+                <td><m-b>datname</m-b></td>
+                <td>接続するデータベース名</td>
+            </tr>
+            <tr>
+                <td><m-b>relid</m-b></td>
+                <td>クラスタ対象のテーブルのOID</td>
+            </tr>
+            <tr>
+                <td><m-b>phase</m-b></td>
+                <td>クラスタ処理のフェーズ</td>
+            </tr>
+            <tr>
+                <td><m-b>sample_blks_total</m-b></td>
+                <td>サンプルされるヒープブロックの総数</td>
+            </tr>
+            <tr>
+                <td><m-b>sample_blks_scanned</m-b></td>
+                <td>スキャンされたヒープブロック数</td>
+            </tr>
+        </tbody>
+    </table>
+    <h4>統計情報の粒度</h4>
+    <p>
+        統計情報の粒度は、システムのデフォルト値としてはパラメータ<m-b>default_statistics_target</m-b>で設定される。
+        この数値を増加すると、データ分布の複雑なテーブルでも精度の高い統計情報が取得可能となるが、統計情報の生成と保存コストが増加する。
+        テーブルごとの特定のカラムに統計情報を設定したい場合、次のコマンドを使用する。
+    </p>
+    <pre><code>
+<m-b>ALTER TABLE テーブル名 ALTER COLUMN カラム名 SET STATISTICS 粒度の値</m-b>;
+    </code></pre>
+
+    <h2>16章 インデックスメンテナンス</h2>
+
+    <h3>インデックスメンテナンスが必要な状況</h3>
+    <h4>インデックスへのアクセス性能が低下する主な原因</h4>
+    <ul>
+        <li>インデックスファイルの<m-b>肥大化</m-b></li>
+        <li>インデックスファイルの<m-b>断片化</m-b></li>
+        <li>インデックスファイルの<m-b>クラスタ性の欠落</m-b></li>
+    </ul>
+    <h4>インデックスファイルの肥大化</h4>
+    <p>
+        インデックスの肥大化は、システムカタログ<m-b>pg_class</m-b>のカラム<m-b>relpages</m-b>(ページ数)と<m-b>reltuples</m-b>(行数)の関係から確認することができる。
+    </p>
+    <h4>インデックスファイルの断片化</h4>
+    <p>
+        インデックスの断片化は、contribモジュールの<m-b>pgstattuple</m-b>に含まれる関数<m-b>psstatindex</m-b>で確認することができる。
+        インデックス名を引数に渡し、結果のカラム<m-b>leaf_fragmentation</m-b>にリーフページの断片化の状況が出力される。
+    </p>
+    <h4>クラスタ性の欠落</h4>
+    <p>
+        クラスタ性とは、テーブルデータの物理的な<m-b>配置順序</m-b>のことを指す。
+        テーブルデータの並びは、インデックスの並びに近いとより効果的に検索ができる。
+        クラスタ性の欠落とは、運用している間にテーブルデータの物理的な配置順序が、頻繁に利用されるインデックスの並びと乖離する状況を指す。
+        この場合、インデックススキャン時に参照する<m-b>ページ数</m-b>が増加し、I/O性能が低下する。<br>
+        これを確認する場合、ビュー<m-b>pg_stats</m-b>のカラム<m-b>correlation</m-b>を参照する。
+        このカラムは<m-b>-1</m-b>から<m-b>1</m-b>の値を取り、<m-b>ANALYZE</m-b>実行時にサンプリングされる。
+        次表に示す状態を表す。
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>値</th>
+                <th>状態</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>-1</td>
+                <td><m-b>降順に揃っている</m-b></td>
+            </tr>
+            <tr>
+                <td>0</td>
+                <td><m-b>ランダム</m-b></td>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td><m-b>昇順に揃っている</m-b></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>インデックスファイルの肥大化の予防</h3>
+    <p>
+        インデックスファイルをなるべく肥大化させないためには、<m-b>バキューム</m-b>処理を実行する。
+        この処理にはインデックスメンテナンスの処理が含まれているため、<m-b>自動バキューム</m-b>を行う設定にしていれば、運用上問題になることはない。
+    </p>
+
+    <h3>インデックスファイルの断片化の改善</h3>
+    <p>
+        インデックスの断片化によりファイルサイズが増加する場合、<m-b>REINDEX</m-b>コマンドによりインデックスを再定義する。
+        REINDEXを実行すると、<m-b>ACCESS EXCLUSIVE</m-b>レベルのロックを取得し、テーブルへの更新ができなくなる。
+        これを避けたい場合、オプション<m-b>CONCURRENTLY</m-b>を付与することで、一時的に別のインデックスを作成し対象のテーブルをロックしない。
+    </p>
+    <h4>対象のインデックスのみ再定義する場合</h4>
+    <pre><code>
+<m-b>REINDEX (VERBOSE) INDEX インデックス名</m-b>;
+    </code></pre>
+    <h4>対象のテーブル上のインデックスをすべて再定義する場合</h4>
+    <pre><code>
+<m-b>REINDEX (VERBOSE) TABLE テーブル名</m-b>;
+    </code></pre>
+    <h4>対象のスキーマ上のインデックスをすべて再定義する場合</h4>
+    <pre><code>
+<m-b>REINDEX (VERBOSE) SCHEMA スキーマ名</m-b>;
+    </code></pre>
+    <h4>対象のデータベース上のインデックスをすべて再定義する場合</h4>
+    <pre><code>
+<m-b>REINDEX (VERBOSE) DATABASE データベース名</m-b>;
+    </code></pre>
+    <h4>対象のデータベース上のシステムカタログのインデックスをすべて再定義する場合</h4>
+    <pre><code>
+<m-b>REINDEX (VERBOSE) SYSTEM データベース名</m-b>;
+    </code></pre>
+    <h4>テーブルロックを取得せずに、対象のテーブル上のインデックスをすべて再定義する場合</h4>
+    <pre><code>
+<m-b>REINDEX (VERBOSE) TABLE CONCURRENTLY テーブル名</m-b>;
+    </code></pre>
+
+    <h3>クラスタ性の欠落の改善</h3>
+    <p>
+        クラスタ性を復活させる場合、<m-b>CLUSTER</m-b>コマンドを使用する。
+        このコマンド実行時の基準となるインデックスは<m-b>テーブル</m-b>ごとに定義されていて、psqlのメタコマンド<m-b>\d</m-b>などで確認できる。
+        また、一度<m-b>USING</m-b>句でインデックスを指定してこのコマンドを実行すると、システムカタログに保存され、次回以降は<m-b>USING</m-b>句で指定する必要がなくなる。
+    </p>
+    <h4>クラスタ性を復活させるコマンド例</h4>
+    <pre><code>
+<m-b>CLUSTER テーブル名 USING インデックス名</m-b>;
+    </code></pre>
+    <h4>テーブルに対し明示的にクラスタを登録するコマンド例</h4>
+    <pre><code>
+<m-b>ALTER TABLE テーブル名 CLUSTER ON インデックス名</m-b>;
+    </code></pre>
+    <h4>テーブルに対し明示的にクラスタを解除するコマンド例</h4>
+    <pre><code>
+<m-b>ALTER TABLE テーブル名 SET WITHOUT CLUSTER</m-b>;
+    </code></pre>
+
+    <h3>CLUSTER実行時の注意点</h3>
+    <p>
+        PostgreSQLでは、クラスタ性を保つインデックスは定義できない。
+        そのため、運用していく中でクラスタ性は損なわれるため、定期的なメンテナンスのオペレーションが必要である。<br>
+        なお、CLUSTER実行時には<m-b>REINDEX</m-b>も実行されるので、断片化とクラスタ性の改善を同時に実行する場合は、<m-b>CLUSTER</m-b>コマンドを実行すればよい。
+        CLUSTERの処理は<m-b>VACUUM FULL</m-b>の処理とほとんど同じであり、次の点に注意する。
+    </p>
+    <ul>
+        <li>一時的に<m-b>対象テーブル*2 + インデックス</m-b>と同程度の容量が必要となる</li>
+        <li><m-b>テーブル</m-b>に対し<m-b>ACCESS EXCLUSIVE</m-b>レベルのロックを取得する</li>
+    </ul>
+
+    <h3>CREATE INDEXやCLUSTERコマンドの進捗確認</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>コマンド</th>
+                <th>確認するビュー</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>CREATE INDEX</td>
+                <td><m-b>pg_stat_progress_create_index</m-b></td>
+            </tr>
+            <tr>
+                <td>CLUSTER</td>
+                <td><m-b>pg_stat_progress_cluster</m-b></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>インデックスオンリースキャンの利用</h3>
+    <p>
+        インデックスのみを使用しテーブルデータを確認せずに検索する仕組みを、<m-b>インデックスオンリースキャン</m-b>という。
+        これは、テーブルデータではなく<m-b>VM</m-b>を確認する仕組みとなっている。
+        テーブルデータを取得していないことを確認する場合、コマンド<m-b>EXPLAIN</m-b>にオプション<m-b>ANALYZE</m-b>、<m-b>BUFFERS</m-b>を付与して実行する。
+        このとき、項目<m-b>Heap Fetches</m-b>にはテーブルを参照した回数が出力され、インデックスのみを参照する場合は値が<m-b>0</m-b>となる。<br>
+        インデックスオンリースキャンは、得られる効果も大きいが、利用できる条件が厳しい側面もある。
+        PostgreSQL14時点で、使用できるインデックスの種類は<m-b>B-tree</m-b>、<m-b>GiST</m-b>、<m-b>SP-GiST</m-b>のみである。
+    </p>
 
     <h2>その他調査まとめ</h2>
 
