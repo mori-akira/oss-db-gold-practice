@@ -21,7 +21,13 @@
         </a>
     </blockquote>
 
-    <h4>コンテンツ</h4>
+    <h4>
+        <span>コンテンツ</span>
+        <div class="toggle-box-wrapper">
+            <input type="checkbox" class="toggle-box" id="toggle-show-complete-content" checked>
+            <label for="toggle-show-complete-content" class="toggle-box-label">学習済みコンテンツを表示</label>
+        </div>
+    </h4>
     <div id="page-tree"></div>
 
     <h2>2章 アーキテクチャの基本</h2>
@@ -5084,7 +5090,8 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
             を超過した場合
         </li>
         <li>
-            autovacuum_naptimeで指定した時間ごとに、挿入された件数が<m-b>autovacuum_vacuum_insert_threshold + autovacuum_vacuum_insert_scale_factor * テーブルの行数</m-b>
+            autovacuum_naptimeで指定した時間ごとに、挿入された件数が<m-b>autovacuum_vacuum_insert_threshold +
+                autovacuum_vacuum_insert_scale_factor * テーブルの行数</m-b>
             を超過した場合
         </li>
     </ul>
@@ -5326,6 +5333,7 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
             </tr>
         </tbody>
     </table>
+    <h4>pg_stat_progress_analyzeビューの情報</h4>
 
     <h2>その他調査まとめ</h2>
 
@@ -5414,6 +5422,7 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
         </a>
     </blockquote>
 
+    <script src="./asset/dexie.min.js"></script>
     <script src="./asset/jquery-3.7.1.slim.min.js"></script>
     <script src="./asset/script.js"></script>
 </body>

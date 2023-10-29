@@ -158,3 +158,24 @@ m-b:not(.clicked)::selection {
     color: transparent;
     background-color: transparent;
 }
+
+.toggle-box-wrapper {
+    margin-left: 2rem;
+    margin-bottom: .5rem;
+    padding: .1rem 1rem;
+    display: inline-block;
+    background-color: #00000010;
+    border-radius: .5rem;
+}
+
+input[type="checkbox"].toggle-box {
+    margin: 0;
+    vertical-align: middle;
+}
+
+label.toggle-box-label {
+    margin-left: .5rem;
+    vertical-align: middle;
+    font-weight: normal;
+    font-size: 1rem;
+}
