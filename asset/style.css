@@ -164,7 +164,7 @@ m-b:not(.clicked)::selection {
     margin-bottom: .5rem;
     padding: .1rem 1rem;
     display: inline-block;
-    background-color: #00000010;
+    background-color: #00000020;
     border-radius: .5rem;
 }
 
