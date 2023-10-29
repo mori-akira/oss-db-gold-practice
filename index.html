@@ -5637,6 +5637,40 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
     </table>
 
     <h3>統計情報取得に関するパラメータ</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>パラメータ</th>
+                <th>デフォルト値</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>autovacuum</m-b></td>
+                <td><m-b>on</m-b></td>
+                <td>
+                    統計情報を自動で収集するか<br>
+                    CREATE TABLE、ALTER TABLEでテーブルごとに指定する場合、<m-b>autovacuum_enabled</m-b>で指定する。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>autovacuum_analyze_threshold</m-b></td>
+                <td><m-b>50</m-b></td>
+                <td>自動バキュームを実行する条件として、更新された行数の閾値</td>
+            </tr>
+            <tr>
+                <td><m-b>autovacuum_analyze_scale_factor</m-b></td>
+                <td><m-b>0.1</m-b></td>
+                <td>自動バキュームを実行する条件として、更新された行数のテーブル行数に対する比率の閾値</td>
+            </tr>
+            <tr>
+                <td><m-b>default_statistics_target</m-b></td>
+                <td><m-b>100</m-b></td>
+                <td>統計情報のサンプリング数(設定値×300行)</td>
+            </tr>
+        </tbody>
+    </table>
 
     <h2>18章 パフォーマンスチューニング</h2>
 
