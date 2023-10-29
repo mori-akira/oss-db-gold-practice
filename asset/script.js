@@ -123,7 +123,7 @@ $(async () => {
     PracticeProgressDao.deleteOld(1000);
 
     // indexedDBに学習進捗が存在すればデータを取得
-    practiceProgressData = (await PracticeProgressDao.readLatest()).progress ?? {};
+    practiceProgressData = (await PracticeProgressDao.readLatest())?.progress ?? {};
     console.log(practiceProgressData);
 
     createMaskBlockAction();
