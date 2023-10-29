@@ -44,7 +44,7 @@ const createMaskBlockAction = () => {
 }
 
 // h2、h3ヘッダーに一意なIDを付与するメソッド
-const addId = () => {
+const addHeaderId = () => {
     $('h2, h3').each((i, e) => {
         const id = `header-${i}`;
         $(e).attr('id', id);
@@ -124,7 +124,7 @@ $(async () => {
     console.log(practiceProgressData);
 
     createMaskBlockAction();
-    addId();
+    addHeaderId();
     addPracticeCompleteBox();
     createContentTree();
     toggleContentTreeVisibility();
