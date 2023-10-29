@@ -1,7 +1,7 @@
 // 学習アプリ用のDB
 const db = new Dexie('PracticeAppDB');
 // 学習進捗用のデータストア
-let ret = db.version(1).stores({
+db.version(1).stores({
     PracticeProgress: '++id, progress, datetime',
 });
 
