@@ -18,6 +18,12 @@ const PracticeProgressDao = {
             id: id
         }).delete();
     },
+    deleteOld: async (num) => {
+        const list = await PracticeProgressDao.readAll();
+        (list.slice(0, -num) ?? []).forEach(async e => {
+            await PracticeProgressDao.delete(e.id);
+        });
+    },
     readAll: async () => {
         return await db.PracticeProgress.toArray();
     },
@@ -114,10 +120,7 @@ const toggleContentTreeVisibility = () => {
 
 $(async () => {
     // 画面表示時に古い学習進捗は削除
-    const list = await PracticeProgressDao.readAll();
-    (list.slice(0, -100) ?? []).forEach(async e => {
-        await PracticeProgressDao.delete(e.id);
-    });
+    PracticeProgressDao.deleteOld(1000);
 
     // indexedDBに学習進捗が存在すればデータを取得
     practiceProgressData = (await PracticeProgressDao.readLatest()).progress ?? {};
