@@ -12,6 +12,11 @@
 <body>
     <h1>OSS-DB Gold Practice</h1>
 
+    <h4>資格概要</h4>
+    <blockquote>
+        <a href="https://oss-db.jp/outline/gold/v2" target="_blank">OSS-DB Goldのご紹介（Ver.2.0）</a>
+    </blockquote>
+
     <h4>
         以下書籍の内容まとめ + 調査したことまとめ
     </h4>
@@ -5719,6 +5724,123 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
     </table>
 
     <h3>実行計画を自動生成する拡張モジュール auto_explain</h3>
+    <p>
+        拡張モジュール<m-b>auto_explain</m-b>を有効にすることで、クエリ実行時に自動で実行計画を<m-b>テキスト</m-b>形式で出力する。(デフォルト設定)
+        これは、内部的な構造を出力するオーバーヘッドが発生するため、特に大量のクエリを実行する際には性能低下のリスクがあるため注意する。
+    </p>
+    <h4>yumでauto_explainをインストールする方法</h4>
+    <pre><code>
+yum install <m-b>postgresql14-contrib</m-b>
+    </code></pre>
+    <h4>postgresql.confでauto_explainを有効にするときの記述</h4>
+    <pre><code>
+<m-b>shared_proload_libraries</m-b> = <m-b>auto_explain</m-b>
+    </code></pre>
+    <h4>SQLコマンドでauto_explainを有効にするときのクエリ</h4>
+    <pre><code>
+<m-b>LOAD 'auto_explain'</m-b>;
+    </code></pre>
+    <h4>auto_explainで使用可能なオプション</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>オプション名</th>
+                <th>設定値</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>log_min_duration</m-b></td>
+                <td><m-b>ミリ秒</m-b></td>
+                <td>
+                    ログ出力を行うクエリの最小実行時間<br>
+                    デフォルト(<m-b>-1</m-b>)は何もログ出力をしない。
+                    <m-b>0</m-b>はすべてのログを出力する。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>log_analyze</m-b></td>
+                <td><m-b>true/false</m-b></td>
+                <td>
+                    EXPLAIN ANALYZEと同様のログを出力するか<br>
+                    trueに設定すると、ログ表示にかかるコストが増加する。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>log_buffers</m-b></td>
+                <td><m-b>true/false</m-b></td>
+                <td>
+                    EXPLAIN (ANALYZE BUFFERS)と同様のログを出力するか
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>log_wal</m-b></td>
+                <td><m-b>true/false</m-b></td>
+                <td>
+                    EXPLAIN (ANALYZE true, WAL true)同様のログを出力するか
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>log_timing</m-b></td>
+                <td><m-b>true/false</m-b></td>
+                <td>
+                    EXPLAIN (ANALYZE, TIMING on)と同様のログを出力するか<br>
+                    trueに設定すると、ログ表示にかかるコストが増加する。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>log_triggers</m-b></td>
+                <td><m-b>true/false</m-b></td>
+                <td>
+                    トリガ実行の統計を出力するか<br>
+                    <m-b>log_analyze</m-b>がtrueの場合にのみ有効である。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>sample_rate</m-b></td>
+                <td><m-b>0~1の実数</m-b></td>
+                <td>
+                    ログを出力する割合<br>
+                    デフォルトは<m-b>1</m-b>である。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>log_verbose</m-b></td>
+                <td><m-b>true/false</m-b></td>
+                <td>
+                    EXPLAIN VERBOSEと同様のログを出力するか
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>log_settings</m-b></td>
+                <td><m-b>true/false</m-b></td>
+                <td>
+                    EXPLAIN (SETTING true)と同様のログを出力するか
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>log_format</m-b></td>
+                <td><m-b>text</m-b>/<m-b>xml</m-b>/<m-b>json</m-b>/<m-b>yaml</m-b></td>
+                <td>
+                    ログ出力のフォーマット
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>log_nested_statements</m-b></td>
+                <td><m-b>true/false</m-b></td>
+                <td>
+                    EXPLAINコマンドではサポートされていない特殊なオプション<br>
+                    trueに設定すると、入れ子状のクエリに対する実行計画を表示する。
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <p>
+        なお、auto_explainのオプションは、ファイル<m-b>postgresql.conf</m-b>でプレフィックス<m-b>auto_explain.</m-b>を付与して指定する。        
+    </p>
+
+    <h3>拡張統計情報 (CREATE STATISTICS)</h3>
 
     <h2>18章 パフォーマンスチューニング</h2>
 
