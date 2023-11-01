@@ -179,3 +179,15 @@ label.toggle-box-label {
     font-weight: normal;
     font-size: 1rem;
 }
+
+button {
+    margin-left: 1rem;
+    border-radius: 0.5rem;
+    color: #EEE;
+    background-color: #F56533;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #C54533;
+}
