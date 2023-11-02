@@ -73,6 +73,8 @@ const addPracticeCompleteBox = () => {
         box.on('click', () => {
             practiceProgressData[id] = box.prop('checked');
             PracticeProgressDao.add(practiceProgressData);
+        });
+        box.on('change', () => {
             toggleContentTreeVisibility();
             updatePracticeProgress();
         });
@@ -124,11 +126,24 @@ const toggleContentTreeVisibility = () => {
 };
 
 // 学習進捗を更新するメソッド
-const updatePracticeProgress = async () => {
+const updatePracticeProgress = () => {
     const total = $.makeArray($('h2, h3')).reduce((pv, cv) => pv + ($(cv).attr('id').startsWith('header-') ? 1 : 0), 0);
-    const done = Object.values((await PracticeProgressDao.readLatest()).progress).reduce((pv, cv) => pv + (cv ? 1 : 0), 0);
+    const done = Object.values(practiceProgressData).reduce((pv, cv) => pv + (cv ? 1 : 0), 0);
     $('#practice-progress').text(`${done} / ${total}`);
 };
+
+// 学習進捗を初期化するメソッド
+const initPracticeProgress = async () => {
+    const option = window.confirm('学習進捗を初期化しますか？');
+    if (option) {
+        Object.keys(practiceProgressData).forEach(e => practiceProgressData[e] = false);
+        await PracticeProgressDao.clear();
+        $.makeArray($('input')).filter(e => $(e).attr('id').startsWith('toggle-complete-') && $(e).prop('checked'))
+            .forEach(e => $(e).prop('checked', false));
+        toggleContentTreeVisibility();
+        updatePracticeProgress();
+    }
+}
 
 $(async () => {
     // 画面表示時に古い学習進捗は削除
@@ -145,4 +160,5 @@ $(async () => {
     toggleContentTreeVisibility();
     updatePracticeProgress();
     $('#toggle-show-complete-content').on('change', toggleContentTreeVisibility);
+    $('#reset-btn').on('click', initPracticeProgress);
 });
