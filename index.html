@@ -3336,6 +3336,8 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         これにより、比較演算や差分演算が容易となった。<br>
         WALレコードを出力しない<m-b>unlogged</m-b>テーブルでは、ストリーミングレプリケーションによるレプリケーションはできない。
     </p>
+
+    <h3>ストリーミングレプリケーションの設定</h3>
     <h4>walsenderプロセスで必要な設定</h4>
     <table>
         <thead>
@@ -3412,6 +3414,8 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         なお、これはPostgreSQL12以降の仕様で、11以前は<m-b>recovery.conf</m-b>に設定を記述していた。
         12以降では、データベースクラスタに<m-b>recovery.conf</m-b>というファイルが存在する場合、PostgreSQLが起動しない仕様となっている。
     </p>
+
+    <h3>ストリーミングレプリケーションのプロセス</h3>
     <h4>walsender/walreceiverプロセスの処理</h4>
     <p>
         walsenderとwalreceiverがWALをやり取りするとき、<m-b>walreceiver</m-b>が主導して処理が行われる。
@@ -3482,22 +3486,23 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
             </tr>
         </tbody>
     </table>
-    <h4>複数のスタンバイ設定</h4>
+
+    <h3>複数のスタンバイ設定</h3>
     <p>
         どのスタンバイを同期として扱うかは、<m-b>プライマリ</m-b>のpostgresql.confの
         パラメータ<m-b>synchronous_standby_names</m-b>で、
         スタンバイを一意に特定する文字列を<m-b>カンマ</m-b>区切りで指定する。<br>
         次に、パラメータの設定例をいくつか示す。
     </p>
-    <h5>接続できた1番左のスタンバイを同期として扱う場合</h5>
+    <h4>接続できた1番左のスタンバイを同期として扱う場合</h4>
     <pre><code>
 <m-b>synchronous_standby_names = 'sby,sby2,sby3'</m-b>
     </code></pre>
-    <h5>先頭から2つのスタンバイを同期として扱う場合</h5>
+    <h4>先頭から2つのスタンバイを同期として扱う場合</h4>
     <pre><code>
 <m-b>synchronous_standby_names = 'FIRST 2 (sby,sby2,sby3)'</m-b>
     </code></pre>
-    <h5>いずれか2つのスタンバイを同期として扱う場合</h5>
+    <h4>いずれか2つのスタンバイを同期として扱う場合</h4>
     <pre><code>
 <m-b>synchronous_standby_names = 'ANY 2 (sby,sby2,sby3)'</m-b>
     </code></pre>
@@ -4582,8 +4587,7 @@ pg_isready <m-b>-h ホスト名 -p 5432 -d データベース名</m-b>
         </tbody>
     </table>
 
-    <h3>PostgreSQLの正常動作の監視</h3>
-    <h4>負荷情報の統計に関するパラメータ</h4>
+    <h3>PostgreSQLの正常動作の監視 - 負荷情報の統計に関するパラメータ</h3>
     <table>
         <thead>
             <tr>
@@ -4607,7 +4611,8 @@ pg_isready <m-b>-h ホスト名 -p 5432 -d データベース名</m-b>
             </tr>
         </tbody>
     </table>
-    <h4>負荷状況の統計に関するビュー</h4>
+
+    <h3>PostgreSQLの正常動作の監視 - 負荷状況の統計に関するビュー</h3>
     <table>
         <thead>
             <tr>
@@ -4655,7 +4660,8 @@ pg_isready <m-b>-h ホスト名 -p 5432 -d データベース名</m-b>
             </tr>
         </tbody>
     </table>
-    <h4>pg_stat_databaseで扱う代表的な情報</h4>
+
+    <h3>pg_stat_databaseで扱う代表的な情報</h3>
     <table>
         <thead>
             <tr>
@@ -4682,7 +4688,8 @@ pg_isready <m-b>-h ホスト名 -p 5432 -d データベース名</m-b>
             </tr>
         </tbody>
     </table>
-    <h4>pg_stat_user_tablesで扱う代表的な情報</h4>
+
+    <h3>pg_stat_user_tablesで扱う代表的な情報</h3>
     <table>
         <thead>
             <tr>
@@ -4745,7 +4752,8 @@ pg_isready <m-b>-h ホスト名 -p 5432 -d データベース名</m-b>
             </tr>
         </tbody>
     </table>
-    <h4>pg_stat_activityで扱う代表的な情報</h4>
+
+    <h3>pg_stat_activityで扱う代表的な情報</h3>
     <table>
         <thead>
             <tr>
@@ -4800,7 +4808,8 @@ pg_isready <m-b>-h ホスト名 -p 5432 -d データベース名</m-b>
             </tr>
         </tbody>
     </table>
-    <h4>pg_stat_activityのカラムstatが取る値</h4>
+
+    <h3>pg_stat_activityのカラムstatが取る値</h3>
     <table>
         <thead>
             <tr>
@@ -4835,7 +4844,8 @@ pg_isready <m-b>-h ホスト名 -p 5432 -d データベース名</m-b>
             </tr>
         </tbody>
     </table>
-    <h4>pg_locksが扱う情報</h4>
+
+    <h3>pg_locksが扱う情報</h3>
     <table>
         <thead>
             <tr>
@@ -5103,8 +5113,9 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
     <pre><code>
 <m-b>ALTER TABLE 対象テーブル SET (autovacuum_enabled = off)</m-b>;
     </code></pre>
-    <h4>自動バキュームの進捗状況確認</h4>
-    <h5>pg_stat_progress_vacuumビューの情報</h5>
+
+    <h3>自動バキュームの進捗状況確認</h3>
+    <h4>pg_stat_progress_vacuumビューの情報</h4>
     <table>
         <thead>
             <tr>
@@ -5143,7 +5154,7 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
             </tr>
         </tbody>
     </table>
-    <h5>自動バキュームの進捗状況のフェーズ</h5>
+    <h4>自動バキュームの進捗状況のフェーズ</h4>
     <table>
         <thead>
             <tr>
@@ -5219,7 +5230,8 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
         ビュー<m-b>pg_stat_progress_cluster</m-b>で確認できる。
         これは、<m-b>CLUSTER</m-b>コマンドの進捗状況も確認できる。
     </p>
-    <h4>pg_stat_progress_clusterビューの情報</h4>
+
+    <h3>pg_stat_progress_clusterビューの情報</h3>
     <table>
         <thead>
             <tr>
@@ -5262,7 +5274,8 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
             </tr>
         </tbody>
     </table>
-    <h4>VACUUM FULLの進捗状況のフェーズ</h4>
+
+    <h3>VACUUM FULLの進捗状況のフェーズ</h3>
     <table>
         <thead>
             <tr>
@@ -5561,8 +5574,7 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
         ただし、統計情報の取得コストが増加することに注意する。
     </p>
 
-    <h3>実行計画の取得方法</h3>
-    <h4>EXECUTEコマンドのオプション</h4>
+    <h3>EXECUTEコマンドのオプション</h3>
     <table>
         <thead>
             <tr>
@@ -5619,7 +5631,8 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
             </tr>
         </tbody>
     </table>
-    <h4>ANALYZEコマンド</h4>
+
+    <h3>ANALYZEコマンド</h3>
     <p>
         ANALYZEコマンドは、指定したテーブルの<m-b>統計情報</m-b>を取得するSQLコマンドである。
         統計情報は、システムカタログの<m-b>pg_statistic</m-b>に保存される。<br>
@@ -5627,7 +5640,8 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
         手動でANALYZEコマンドを実行するよりも、自動バキュームに任せる方が負荷をかけずに住むため、通常は自動バキュームを有効にする。
         なお、統計情報はサンプリングによって取得されるため、数行の更新では統計情報の更新は不要であり、大量の更新が発生した場合にANALYZEコマンドによる手動実行を行う。
     </p>
-    <h4>ANALYZEコマンドのオプション</h4>
+
+    <h3>ANALYZEコマンドのオプション</h3>
     <table>
         <thead>
             <tr>
