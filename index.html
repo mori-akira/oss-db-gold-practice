@@ -1410,7 +1410,7 @@ CREATE TABLE log_2 <m-b>PARTITION OF log FOR VALUES WITH (MODULUS 2, REMAINDER 1
     <h4>パーティショニングの設計方針</h4>
     <p>
         <m-b>更新の可能性がある</m-b>カラムはパーティションキーに指定するべきでない。
-        これは、パーティションキーが更新されて条件に合うパーティションに移動する処理は、オーバーヘッドが大きいためである。<br>
+        これは、パーティションキーが更新されて条件に合うパーティションに移動する処理は、オーバヘッドが大きいためである。<br>
         パーティションをパーティショニングテーブルとして定義し、そのパーティションのことを<m-b>サブパーティション</m-b>と呼ぶ。
         データ量が多く1度のパーティショニングで絞り込みが不足する場合、より細かな単位に分割するサブパーティションの利用を検討する。<br>
         運用の中で参照することはないが、要件上削除することができないパーティションが存在する場合、
@@ -1979,7 +1979,7 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
     </ul>
     <h4>デメリット</h4>
     <ul>
-        <li><m-b>並び替え</m-b>や<m-b>インデックス作成</m-b>処理などで、ロケール処理によるオーバーヘッドが発生する</li>
+        <li><m-b>並び替え</m-b>や<m-b>インデックス作成</m-b>処理などで、ロケール処理によるオーバヘッドが発生する</li>
         <li><m-b>前方一致検索</m-b>でインデックスが使用できなくなる</li>
         <li><m-b>OS</m-b>のロケールに依存するため、<m-b>OS</m-b>の環境に依存して挙動が変わる可能性がある</li>
         <li>ロケールを指定することで、指定できる<m-b>エンコーディング</m-b>が固定される可能性がある</li>
@@ -2868,7 +2868,7 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
     <p>
         PostgreSQLでは、クライアントからの接続要求ごとに<m-b>バックエンドプロセス</m-b>が作成される。
         このプロセスへのCPU割り当てはカーネルがスケジューリングするため、CPUコア数より接続数が多くても問題はないが、
-        あまりに接続数が多すぎるとプロセスの<m-b>コンテキストスイッチ</m-b>によるオーバーヘッドが大きくなってしまう。<br>
+        あまりに接続数が多すぎるとプロセスの<m-b>コンテキストスイッチ</m-b>によるオーバヘッドが大きくなってしまう。<br>
         クライアントの接続に関する設定は、postgresql.confの次表に示すパラメータで設定する。
     </p>
     <table>
@@ -3119,7 +3119,7 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         PostgreSQLでは、データ書き込みプロセスやWAL書き込みプロセスといった少数のプロセスがI/O要求の大半を占め、
         データアクセスもランダムアクセスが多いため、I/Oスケジューラは<m-b>mq-deadline</m-b>に設定することが推奨される。
         一方、RAIDドライバがI/Oスケジュールを行う場合や、NVMeのような高速なデバイスを利用する場合など、
-        OSのI/Oスケジューラがオーバーヘッドとなってしまうことがあり、その場合は<m-b>none</m-b>に設定することも検討する。
+        OSのI/Oスケジューラがオーバヘッドとなってしまうことがあり、その場合は<m-b>none</m-b>に設定することも検討する。
     </p>
 
     <h3>PostgreSQLのディスク設定</h3>
@@ -5746,7 +5746,7 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
     <h3>実行計画を自動生成する拡張モジュール auto_explain</h3>
     <p>
         拡張モジュール<m-b>auto_explain</m-b>を有効にすることで、クエリ実行時に自動で実行計画を<m-b>テキスト</m-b>形式で出力する。(デフォルト設定)
-        これは、内部的な構造を出力するオーバーヘッドが発生するため、特に大量のクエリを実行する際には性能低下のリスクがあるため注意する。
+        これは、内部的な構造を出力するオーバヘッドが発生するため、特に大量のクエリを実行する際には性能低下のリスクがあるため注意する。
     </p>
     <h4>yumでauto_explainをインストールする方法</h4>
     <pre><code>
@@ -5857,7 +5857,7 @@ yum install <m-b>postgresql14-contrib</m-b>
         </tbody>
     </table>
     <p>
-        なお、auto_explainのオプションは、ファイル<m-b>postgresql.conf</m-b>でプレフィックス<m-b>auto_explain.</m-b>を付与して指定する。        
+        なお、auto_explainのオプションは、ファイル<m-b>postgresql.conf</m-b>でプレフィックス<m-b>auto_explain.</m-b>を付与して指定する。
     </p>
 
     <h3>拡張統計情報</h3>
@@ -5917,7 +5917,7 @@ yum install <m-b>postgresql14-contrib</m-b>
     <table>
         <thead>
             <tr>
-                <th><m-b>ノード名</m-b></th>
+                <th>ノード名</th>
                 <th>説明</th>
             </tr>
         </thead>
@@ -5945,6 +5945,229 @@ yum install <m-b>postgresql14-contrib</m-b>
             <tr>
                 <td><m-b>Function Scan</m-b></td>
                 <td>組み込み関数やユーザ定義関数を実行する</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>結合ノード</h3>
+    <p>
+        結合ノードは<m-b>2つ</m-b>の実行結果の集合を求めるものであり、<m-b>1つ</m-b>の結果を返す。
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>ノード名</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>Nested Loop</m-b></td>
+                <td>
+                    外側テーブル1行のデータに対して内側テーブルすべて評価する<br>
+                    このとき、<m-b>Join Filter</m-b>で評価される。
+                    <m-b>二重</m-b>ループになるため、ループ回数が増えるほど効率は悪くなる。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>Hash Join</m-b></td>
+                <td>
+                    内側テーブルのハッシュを作成し、ハッシュに基づいて外側テーブルを評価する<br>
+                    ハッシュを作成するため、先に内側テーブルをスキャンしてから外側テーブルをスキャンする。
+                    最初にハッシュを作成するためのオーバヘッドが発生するが、内側テーブルのサイズが<m-b>小さく</m-b>、外側テーブルのサイズが<m-b>大きい</m-b>場合などに有効となる。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>Merge Join</m-b></td>
+                <td>
+                    結合条件でソートされたテーブルを順に評価する<br>
+                    2つのテーブルを結合キーでソートし、順番に突き合わせることで評価する。
+                    結合キーでソートされた状態が前提のため、事前にソート処理が必要である。
+                    ソート処理のオーバヘッドが大きいことが課題となるが、あらかじめソート済みのデータを結合する際は有効である。
+                    また、<m-b>大きな</m-b>テーブル同士の結合で、<m-b>ハッシュ</m-b>がメモリに収まらないような場合に有効である。
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>データを加工するノード</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>ノード名</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>Limit</m-b></td>
+                <td>明示的に上限を要求する場合に作成される</td>
+            </tr>
+            <tr>
+                <td><m-b>Result</m-b></td>
+                <td>プランナが実行計画を組み上げる上で必要に応じて追加する</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>その他のノード</h3>
+    <table>
+        <thead>
+            <tr>
+                <th><nobr>ノード名</nobr></th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>Sort</m-b></td>
+                <td>
+                    スキャン結果をソートする<br>
+                    ノードにはソートに用いる<m-b>カラム名</m-b>が表示され、<m-b>DESC</m-b>の場合はそれも表示される。
+                    また、ソートの方法(<m-b>クイックソート</m-b>/<m-b>外部ソート</m-b>)も表示される。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>Incremental Sort</m-b></td>
+                <td>スキャン結果のソート時にインデックスを用いることでソートに用いるメモリを削減し、1件目の結果取得を高速化する</td>
+            </tr>
+            <tr>
+                <td><m-b>Hash</m-b></td>
+                <td>スキャン結果からハッシュを取得する</td>
+            </tr>
+            <tr>
+                <td><m-b>Aggregate</m-b></td>
+                <td>スキャン結果をsum()やavg()などの演算で集約する</td>
+            </tr>
+            <tr>
+                <td><m-b>HashAggregate</m-b></td>
+                <td>スキャン結果からハッシュを作成しその結果で集約する</td>
+            </tr>
+            <tr>
+                <td><m-b>Append</m-b></td>
+                <td>
+                    スキャン結果に別のスキャン結果を追加する<br>
+                    また、複数<m-b>パーティション</m-b>で実行された検索結果をマージする。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>BitmapAnd</m-b></td>
+                <td>複数のビットマップスキャンの結果の積を取得する</td>
+            </tr>
+            <tr>
+                <td><m-b>BitmapOr</m-b></td>
+                <td>複数のビットマップスキャンの結果の和を取得する</td>
+            </tr>
+            <tr>
+                <td><m-b>Modify Table</m-b></td>
+                <td>INSERT/UPDATE/DELETEなどの更新系SQLにEXPLAINを発行したときの特殊なノード</td>
+            </tr>
+            <tr>
+                <td><m-b>Materialize</m-b></td>
+                <td>スキャン結果を一時的にファイルに書き出す</td>
+            </tr>
+            <tr>
+                <td><m-b>Gather</m-b></td>
+                <td>並列に実行したスキャン結果を集約する</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>パラレルクエリ</h3>
+    <p>
+        パラレルクエリとは、複数のCPUを並列に実行するような<m-b>実行計画</m-b>のことを指す。
+        PostgreSQL9.6で導入され、バージョンごとに対応するノードも増えている。
+    </p>
+    <h4>パラレルクエリに関するノード</h4>
+    <table>
+        <thead>
+            <tr>
+                <th><nobr>ノード名</nobr></th>
+                <th><nobr>導入<br>バージョン</nobr></th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>Parallel Seq Scan</m-b></td>
+                <td>9.6</td>
+                <td>テーブルスキャンを並列実行する</td>
+            </tr>
+            <tr>
+                <td><m-b>Parallel Index Scan</m-b></td>
+                <td>10</td>
+                <td>インデックススキャンを並列実行する</td>
+            </tr>
+            <tr>
+                <td><m-b>Parallel Index Only Scan</m-b></td>
+                <td>10</td>
+                <td>インデックスオンリースキャンを並列実行する</td>
+            </tr>
+            <tr>
+                <td><m-b>Parallel Bitmap Heap Scan</m-b></td>
+                <td>10</td>
+                <td>ビットマップスキャンを並列実行する</td>
+            </tr>
+            <tr>
+                <td><m-b>Nested Loop</m-b></td>
+                <td>9.6</td>
+                <td>外側テーブル1行のデータに対して、内側テーブルをN並列で評価する</td>
+            </tr>
+            <tr>
+                <td><m-b>Parallel Hash Join</m-b></td>
+                <td>9.6</td>
+                <td>内側テーブルのハッシュを作成し、ハッシュに基づいて外側テーブルを並列に評価する</td>
+            </tr>
+            <tr>
+                <td><m-b>Merge Join</m-b></td>
+                <td>10</td>
+                <td>結合条件でソートされたテーブルを、各プロセスが分担して並列に評価する</td>
+            </tr>
+            <tr>
+                <td><m-b>Finalize Aggregate</m-b></td>
+                <td>9.6</td>
+                <td>並列処理する各プロセスが生成した部分的な結果を1つに集約する</td>
+            </tr>
+            <tr>
+                <td><m-b>Partial Aggregate</m-b></td>
+                <td>9.6</td>
+                <td>並列処理する各プロセスの処理結果を一時的・部分的に集約する</td>
+            </tr>
+            <tr>
+                <td><m-b>Gather</m-b></td>
+                <td>9.6</td>
+                <td>並列実行した処理結果を集約する</td>
+            </tr>
+            <tr>
+                <td><m-b>Gather Merge</m-b></td>
+                <td>10</td>
+                <td>処理のソートが必要な場合に、並列に実行した処理結果をマージしながら集約する</td>
+            </tr>
+            <tr>
+                <td><m-b>Parallel Append</m-b></td>
+                <td>11</td>
+                <td>並列実行された複数のスキャン結果を統合する</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>パラレルクエリのチューニングパラメータ</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>パラメータ</th>
+                <th>デフォルト値</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>parallel_setup_cost</m-b></td>
+                <td><m-b>1000</m-b></td>
+                <td>
+                    パラレルワーカプロセスを起動するコスト<br>
+                    <m-b>seq_page_cost</m-b>との相対的なコストを指定する。
+                </td>
             </tr>
         </tbody>
     </table>
@@ -6037,6 +6260,13 @@ yum install <m-b>postgresql14-contrib</m-b>
             9.26. システム管理関数
         </a>
     </blockquote>
+
+    <h3>PostgreSQLのソートについて</h3>
+    <p>
+        PostgreSQLでは、メモリ上で実行できる場合は<m-b>クイックソート</m-b>を行い、できない場合はソート結果を外部に出力する<m-b>外部ソート</m-b>を使用する。
+        後者は、問い合わせが遅くなる要因の一つであり、<m-b>作業メモリ</m-b>のサイズが小さい場合に起こる現象である。
+        問い合わせを実行してみるまで、どちらでソートされるかは分からない。
+    </p>
 
     <script src="./asset/dexie.min.js"></script>
     <script src="./asset/jquery-3.7.1.slim.min.js"></script>
