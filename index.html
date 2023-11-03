@@ -6249,7 +6249,7 @@ yum install <m-b>postgresql14-contrib</m-b>
             <tr>
                 <td rowspan="2"><m-b>cost=X.XX..Y.YY</m-b></td>
                 <td><m-b>始動コスト</m-b>(X.XX)</td>
-                <td>1県目のデータを返却できるようになるまでにかかるコスト</td>
+                <td>1件目のデータを返却できるようになるまでにかかるコスト</td>
             </tr>
             <tr>
                 <td><m-b>総コスト</m-b>(Y.YY)</td>
@@ -6349,8 +6349,83 @@ SELECT relname, <m-b>reltuples</m-b> FROM <m-b>pg_class</m-b> WHERE relname = '�
             </tr>
         </tbody>
     </table>
+    <p>
+        なお、このパラメータは<m-b>SET</m-b>コマンドを用いて特定の問い合わせのみ調整できるが、
+        各パラメータのデフォルト値は経験的に利用されてきた値であり、基本的には変更することは推奨されない。
+    </p>
+
+    <h3>処理コスト見積もりの計算例</h3>
+    <h4>シーケンシャルスキャンのコスト計算例</h4>
+    <pre><code>
+<m-b>(seq_page_cost * relpages) + (cpu_tuple_cost * reltuples)</m-b>
+    </code></pre>
+    <h4>条件付きシーケンシャルスキャンのコスト計算例</h4>
+    <pre><code>
+<m-b>(seq_page_cost * relpages) + (cpu_tuple_cost * reltuples) + (cpu_operator_cost * 条件式の数 * reltuples)</m-b>
+    </code></pre>
+    <h4>クイックソートの計算例</h4>
+    <pre><code>
+<m-b>シーケンシャルスキャンの総コスト + ソートのコスト</m-b>
+= <m-b>シーケンシャルスキャンの総コスト + 2 * cpu_operator_cost * 行数 * log<sub>2</sub>(行数)</m-b>
+    </code></pre>
+    <h4>インデックススキャンで考慮する4つのコスト</h4>
+    <ol>
+        <li><m-b>インデックスのディスクアクセス</m-b>のコスト</li>
+        <li><m-b>インデックスのCPU</m-b>のコスト</li>
+        <li><m-b>テーブルデータのディスクアクセス</m-b>のコスト</li>
+        <li><m-b>テーブルデータのCPU</m-b>のコスト</li>
+    </ol>
+
+    <h3>ANALYZEオプションを追加した場合に追加で表示される情報</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>表示項目</th>
+                <th>項目名</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="2"><m-b>actual time = X.XX..Y.YY</m-b></td>
+                <td><m-b>始動時間</m-b>(X.XX)</td>
+                <td>1件目のデータを取得するまでにかかった時間(単位:<m-b>ミリ秒</m-b>)</td>
+            </tr>
+            <tr>
+                <td><m-b>総実行時間</m-b>(Y.YY)</td>
+                <td>すべてのデータを取得するまでにかかった時間(単位:<m-b>ミリ秒</m-b>)</td>
+            </tr>
+            <tr>
+                <td><m-b>rows=N</m-b></td>
+                <td><m-b>行数</m-b>(N)</td>
+                <td>ノードが返却した行数</td>
+            </tr>
+            <tr>
+                <td><m-b>loops=N</m-b></td>
+                <td><m-b>ノード実行回数</m-b>(N)</td>
+                <td>ノードの実行回数</td>
+            </tr>
+        </tbody>
+    </table>
 
     <h2>18章 パフォーマンスチューニング</h2>
+
+    <h3>事象分析で実行すること</h3>
+    <ol>
+        <li><m-b>PostgreSQLのログ取得</m-b></li>
+        <li><m-b>テーブル統計情報の取得</m-b></li>
+        <li><m-b>クエリ統計情報の取得</m-b></li>
+        <li><m-b>システムリソース情報の取得</m-b></li>
+    </ol>
+
+    <h3>事象分析の流れ</h3>
+    <ol>
+        <li><m-b>情報を取得する</m-b></li>
+        <li><m-b>事象を分析する</m-b></li>
+        <li><m-b>原因を絞り込む</m-b></li>
+        <li><m-b>チューニングを実施して効果を測定する</m-b></li>
+        <li><m-b>影響を評価する</m-b></li>
+    </ol>
 
     <h2>その他調査まとめ</h2>
 
