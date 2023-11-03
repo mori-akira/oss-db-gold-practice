@@ -2019,7 +2019,7 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         なお、アクセスコントロール情報は<m-b>ロール名=アクセス権限/権限を付与したロール名</m-b>のフォーマットで表示される。<br>
         PostgreSQL14の時点で注意すべき仕様として、PUBLICロールは<m-b>publicスキーマ</m-b>に対するCREATE権限を持つことがあげられる。
         そのため、デフォルト設定ではすべてのロールは<m-b>publicスキーマ</m-b>にオブジェクトを作成することができる。
-        PUBLICスキーマからpublicスキーマに対する権限を剥奪し、これを防ぐ場合、次のコマンドを実行する。
+        PUBLICロールからpublicスキーマに対する権限を剥奪し、これを防ぐ場合、次のコマンドを実行する。
     </p>
     <pre><code>
 <m-b>REVOKE ALL ON SCHEMA public FROM PUBLIC;</m-b>
@@ -2433,21 +2433,24 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         <li><m-b>サーバ</m-b>に問題が起きていないか</li>
         <li><m-b>PostgreSQL</m-b>に問題が起きていないか</li>
     </ul>
-    <h4>サーバの監視</h4>
+
+    <h3>サーバの監視</h3>
     <p>
         サーバリソースとして、<m-b>CPU</m-b>、<m-b>メモリ</m-b>、<m-b>ディスク</m-b>、<m-b>ネットワーク</m-b>
         が正常に動いているかを監視する。
         これらは、OSやストレージに付属するコマンドの<m-b>sar</m-b>、<m-b>iostat</m-b>、<m-b>vmstat</m-b>、<m-b>top</m-b>、
         <m-b>netstat</m-b>などを用いて情報を収集する。
     </p>
-    <h4>PostgreSQLの監視</h4>
+
+    <h3>PostgreSQLの監視</h3>
     <ul>
         <li>必要な<m-b>プロセス</m-b>は正常に稼働しているか</li>
         <li><m-b>ディスク容量</m-b>に問題はないか</li>
         <li>想定通りの<m-b>性能</m-b>は出せているか</li>
         <li>PostgreSQLの<m-b>サーバーログ</m-b>に異常を知らせる通知はないか</li>
     </ul>
-    <h4>プロセスの監視</h4>
+
+    <h3>プロセスの監視</h3>
     <table>
         <thead>
             <tr>
@@ -2495,7 +2498,8 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
             </tr>
         </tbody>
     </table>
-    <h4>ディスク容量の監視</h4>
+
+    <h3>ディスク容量の監視</h3>
     <table>
         <thead>
             <tr>
@@ -2533,7 +2537,8 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
             </tr>
         </tbody>
     </table>
-    <h4>性能の監視</h4>
+
+    <h3>性能の監視</h3>
     <table>
         <thead>
             <tr>
@@ -2619,11 +2624,10 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
     </table>
     <p>
         また、設定ファイル<m-b>postgresql.conf</m-b>のパラメータ<m-b>log_min_duration_statement</m-b>を設定することで、
-        想定よりも時間のかかったクエリをサーバーログに出力することも可能である。
+        想定よりも時間のかかったクエリをサーバログに出力することも可能である。
     </p>
 
-    <h3>サーバログ設定</h3>
-    <h4>ログをどこに出力するか</h4>
+    <h3>サーバログをどこに出力するかの設定</h3>
     <table>
         <thead>
             <tr>
@@ -2667,7 +2671,8 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
             </tr>
         </tbody>
     </table>
-    <h4>ログをいつ出力するか</h4>
+
+    <h3>サーバログをいつ出力するかの設定</h3>
     <table>
         <thead>
             <tr>
@@ -2735,7 +2740,8 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
             </tr>
         </tbody>
     </table>
-    <h4>ログを何に出力するか</h4>
+
+    <h3>サーバログを何に出力するかの設定</h3>
     <table>
         <thead>
             <tr>
@@ -2824,7 +2830,8 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
             </tr>
         </tbody>
     </table>
-    <h4>ログをどのように管理するか</h4>
+
+    <h3>サーバログをどのように管理するかの設定</h3>
     <table>
         <thead>
             <tr>
