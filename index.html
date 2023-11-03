@@ -6014,7 +6014,9 @@ yum install <m-b>postgresql14-contrib</m-b>
     <table>
         <thead>
             <tr>
-                <th><nobr>ノード名</nobr></th>
+                <th>
+                    <nobr>ノード名</nobr>
+                </th>
                 <th>説明</th>
             </tr>
         </thead>
@@ -6082,8 +6084,12 @@ yum install <m-b>postgresql14-contrib</m-b>
     <table>
         <thead>
             <tr>
-                <th><nobr>ノード名</nobr></th>
-                <th><nobr>導入<br>バージョン</nobr></th>
+                <th>
+                    <nobr>ノード名</nobr>
+                </th>
+                <th>
+                    <nobr>導入<br>バージョン</nobr>
+                </th>
                 <th>説明</th>
             </tr>
         </thead>
@@ -6152,11 +6158,15 @@ yum install <m-b>postgresql14-contrib</m-b>
     </table>
 
     <h3>パラレルクエリのチューニングパラメータ</h3>
+    <p>
+        パラレルクエリを使用するために特別な設定は不要だが、設定パラメータに基づいてPostgreSQLが判断して使用するため、制御はできない。
+        そのため、適切にパラレルクエリを使用したい場合、ユーザがパラメータをチューニングする必要がある。
+    </p>
     <table>
         <thead>
             <tr>
                 <th>パラメータ</th>
-                <th>デフォルト値</th>
+                <th><nobr>デフォルト値</nobr></th>
                 <th>説明</th>
             </tr>
         </thead>
@@ -6165,8 +6175,176 @@ yum install <m-b>postgresql14-contrib</m-b>
                 <td><m-b>parallel_setup_cost</m-b></td>
                 <td><m-b>1000</m-b></td>
                 <td>
-                    パラレルワーカプロセスを起動するコスト<br>
-                    <m-b>seq_page_cost</m-b>との相対的なコストを指定する。
+                    パラレルワーカプロセスを起動する閾値となるコスト<br>
+                    <m-b>seq_page_cost</m-b>に対する相対的なコストを指定する。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>parallel_tuple_cost</m-b></td>
+                <td><m-b>0.1</m-b></td>
+                <td>
+                    1タプルをあるワーカプロセスから別のワーカプロセスにコピーする閾値となるコスト<br>
+                    <m-b>seq_page_cost</m-b>に対する相対的なコストを指定する。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>min_parallel_table_scan_size</m-b></td>
+                <td><m-b>8MB</m-b></td>
+                <td>テーブルスキャンを並列処理するための下限のテーブルサイズ</td>
+            </tr>
+            <tr>
+                <td><m-b>min_parallel_index_scan_size</m-b></td>
+                <td><m-b>512kB</m-b></td>
+                <td>インデックススキャンを並列処理するための下限のインデックスサイズ</td>
+            </tr>
+            <tr>
+                <td><m-b>force_parallel_mode</m-b></td>
+                <td><m-b>off</m-b></td>
+                <td>性能によらず強制的に並列処理の実行計画を作成するかどうか</td>
+            </tr>
+            <tr>
+                <td><m-b>max_worker_processes</m-b></td>
+                <td><m-b>8</m-b></td>
+                <td>システムがサポートするバックグラウンドプロセスの上限</td>
+            </tr>
+            <tr>
+                <td><m-b>max_parallel_workers</m-b></td>
+                <td><m-b>8</m-b></td>
+                <td>パラレルクエリ用にシステムがサポートするワーカ数の上限</td>
+            </tr>
+            <tr>
+                <td><m-b>max_parallel_workers_per_gather</m-b></td>
+                <td><m-b>2</m-b></td>
+                <td>
+                    GatherまたはGather Mergeノード1つに対して起動できるパラレルクエリのワーカ数の上限<br>
+                    <m-b>max_worker_processes</m-b>が上限数となる。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>max_parallel_maintenance_workers</m-b></td>
+                <td><m-b>2</m-b></td>
+                <td>CREATE INDEXとVACUUMが利用するワーカプロセス数の上限</td>
+            </tr>
+            <tr>
+                <td><m-b>parallel_leader_participation</m-b></td>
+                <td><m-b>on</m-b></td>
+                <td>
+                    並列処理にリーダプロセスも参加するかどうか<br>
+                    <m-b>on</m-b>にすると、並列度は上がるがリーダプロセスが担当する処理が終わるまで次のノードに結果を返せず、クエリ全体の処理時間が早まるとは限らない。
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>各ノードで表示される共通項目</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>表示項目</th>
+                <th>項目名</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="2"><m-b>cost=X.XX..Y.YY</m-b></td>
+                <td><m-b>始動コスト</m-b>(X.XX)</td>
+                <td>1県目のデータを返却できるようになるまでにかかるコスト</td>
+            </tr>
+            <tr>
+                <td><m-b>総コスト</m-b>(Y.YY)</td>
+                <td>すべてのデータを返却するまでにかかるコスト</td>
+            </tr>
+            <tr>
+                <td><m-b>width=XXX</m-b></td>
+                <td><m-b>行長</m-b></td>
+                <td>ノードが返却する1行当たりの平均の行の長さ</td>
+            </tr>
+            <tr>
+                <td><m-b>rows=YYY</m-b></td>
+                <td><m-b>行数</m-b></td>
+                <td>ノードが返却する行数</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>処理コストの見積もり</h3>
+    <p>
+        シーケンシャルスキャンのようなノードは始動コストが<m-b>0</m-b>になるが、インデックススキャンなどは事前の処理があるため異なる。
+        また<m-b>ソート</m-b>や<m-b>ハッシュ</m-b>などのノードは、事前処理ですべてのデータを読み込むため、始動コストは<m-b>大きく</m-b>なる。<br>
+        総コストは、すべての<m-b>下位</m-b>ノードの処理を実行するコストであり、<m-b>下位</m-b>ノードのコストは<m-b>上位</m-b>ノードのコストに加算される。
+        始動コストが大きいことは必ずしも問題でなく、総コストがどの程度増加するかが重要となる。<br>
+        行長は、テーブルを構成するカラムのデータ型の長さを足し合わせたものとなる。
+        integer型のカラムが2つのテーブルであれば、行長は<m-b>8</m-b>となる。
+        text型のように長さが不定のカラムを含む場合、<m-b>統計情報</m-b>を収集していないと妥当な値が表示されない。
+        また、行数は総コストを求めるうえで重要な指標となるが、これも<m-b>統計情報</m-b>を収集していないと正確な値が算出できない。
+    </p>
+    <h4>行長を確認するSQLクエリ</h4>
+    <pre><code>
+SELECT tablename, attname, <m-b>avg_width</m-b> FROM <m-b>pg_stats</m-b> WHERE tablename = 'テーブル名';
+    </code></pre>
+    <h4>行数を確認するSQLクエリ</h4>
+    <pre><code>
+SELECT relname, <m-b>reltuples</m-b> FROM <m-b>pg_class</m-b> WHERE relname = 'テーブル名';
+    </code></pre>
+
+    <h3>処理コストの見積もりに関するパラメータ</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>パラメータ</th>
+                <th><nobr>デフォルト値</nobr></th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>seq_page_cost</m-b></td>
+                <td><m-b>1.0</m-b></td>
+                <td>
+                    ディスクからシーケンシャルアクセスで1ページ分のデータ(<m-b>8192バイト</m-b>)を読み込むためのコスト<br>
+                    このパラメータは、他のコスト算出用のパラメータの基準となる相対値である。
+                    そのため、基本的に<m-b>1.0</m-b>で設定すればよい。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>random_page_cost</m-b></td>
+                <td><m-b>4.0</m-b></td>
+                <td>ディスクからランダムアクセスで1ページ分のデータを読み込むためのコスト</td>
+            </tr>
+            <tr>
+                <td><m-b>cpu_tuple_cost</m-b></td>
+                <td><m-b>0.01</m-b></td>
+                <td>ヒープデータ1行当たりのCPU処理にかかるコスト</td>
+            </tr>
+            <tr>
+                <td><m-b>cpu_index_tuple_cost</m-b></td>
+                <td><m-b>0.005</m-b></td>
+                <td>インデックスデータ1行当たりのCPU処理にかかるコスト</td>
+            </tr>
+            <tr>
+                <td><m-b>cpu_operator_cost</m-b></td>
+                <td><m-b>0.0025</m-b></td>
+                <td>WHERE句等で比較演算1回にかかるコスト</td>
+            </tr>
+            <tr>
+                <td><m-b>parallel_setup_cost</m-b></td>
+                <td><m-b>1000</m-b></td>
+                <td>パラレルワーカのプロセス起動・各種初期化を行うコスト</td>
+            </tr>
+            <tr>
+                <td><m-b>parallel_tuple_cost</m-b></td>
+                <td><m-b>0.1</m-b></td>
+                <td>1行分のデータをワーカプロセスから別のワーカプロセスにコピーするコスト</td>
+            </tr>
+            <tr>
+                <td><m-b>effectvie_cache_size</m-b></td>
+                <td><m-b>4GB</m-b></td>
+                <td>
+                    ディスクアクセス時のキャッシュヒット率を予想するための、PostgreSQLが利用していると仮定するメモリサイズ<br>
+                    このパラメータのみ、<m-b>se_page_cost</m-b>の相対値とは異なる。
+                    サーバ上にPostgreSQL以外に動作するアプリケーションがない場合、物理メモリの<m-b>50%</m-b>程度を指定するとよい。
+                    この設定値を大きくしたからと言って、実際に確保されるメモリに変動はなく、あくまでキャッシュヒット率からディスクアクセス発生率を推定するための値である。
                 </td>
             </tr>
         </tbody>
