@@ -6730,6 +6730,58 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         問い合わせを実行してみるまで、どちらでソートされるかは分からない。
     </p>
 
+    <h3>ログ出力に使える代表的なエスケープシーケンス</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>エスケープシーケンス</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>%a</m-b></td>
+                <td>アプリケーション名</td>
+            </tr>
+            <tr>
+                <td><m-b>%u</m-b></td>
+                <td>ユーザ名</td>
+            </tr>
+            <tr>
+                <td><m-b>%d</m-b></td>
+                <td>データベース名</td>
+            </tr>
+            <tr>
+                <td><m-b>%p</m-b></td>
+                <td>プロセス識別子</td>
+            </tr>
+            <tr>
+                <td><m-b>%t</m-b></td>
+                <td>ミリ秒なしのタイムスタンプ</td>
+            </tr>
+            <tr>
+                <td><m-b>%m</m-b></td>
+                <td>ミリ秒付きタイムスタンプ</td>
+            </tr>
+            <tr>
+                <td><m-b>%e</m-b></td>
+                <td>SQLSTATE エラーコード</td>
+            </tr>
+            <tr>
+                <td><m-b>%s</m-b></td>
+                <td>プロセスの開始タイムスタンプ</td>
+            </tr>
+            <tr>
+                <td><m-b>%x</m-b></td>
+                <td>トランザクションID(未割り当ては<m-b>0</m-b>)</td>
+            </tr>
+            <tr>
+                <td><m-b>%l</m-b></td>
+                <td>各セッションまたおは各プロセスのログ行番号</td>
+            </tr>
+        </tbody>
+    </table>
+
     <script src="./asset/dexie.min.js"></script>
     <script src="./asset/jquery-3.7.1.slim.min.js"></script>
     <script src="./asset/script.js"></script>
