@@ -3659,7 +3659,7 @@ synchronous_standby_names = <m-b>'sby'</m-b>
                 スタンバイの設定を変更する場合、postgresql.confやpg_hba.confを変更する。
                 また、スタンバイとして起動するために<m-b>standby.signal</m-b>ファイルを作成する。<br>
                 なお、前述のpg_basebackupコマンドで<m-b>-R</m-b>オプションを指定する場合、
-                <m-b>postgresql.auto.conf</m-b>にレプリケーション人必要な接続情報が記録され、
+                <m-b>postgresql.auto.conf</m-b>にレプリケーションに必要な接続情報が記録され、
                 自動的に<m-b>standby.signal</m-b>ファイルがデータベースクラスタ配下に作成される。
             </p>
         </li>
@@ -3984,7 +3984,7 @@ synchronous_standby_names = <m-b>'sby'</m-b>
         WAL領域の使用率を調整する場合、パラメータ<m-b>wal_keep_size</m-b>(デフォルト値:<m-b>0</m-b>)を指定する。
         このパラメータはスタンバイが必要とする可能性のあるWALファイルを保持するため、保持する容量を<m-b>MB</m-b>単位で指定する。
         多くの場合、max_wal_sizeが適切に設定されていれば問題にはならないが、細かい調整が必要な場合にはチューニングポイントとなる。<br>
-        また、<m-b>レプリケーションスロット</m-b>とパラメータ<m-b>maz_slot_wal_keep_size</m-b>(デフォルト値:<m-b>-1</m-b>)でも同様の制御が可能である。
+        また、<m-b>レプリケーションスロット</m-b>とパラメータ<m-b>max_slot_wal_keep_size</m-b>(デフォルト値:<m-b>-1</m-b>)でも同様の制御が可能である。
     </p>
 
     <h2>12章 論理レプリケーション</h2>
@@ -4326,8 +4326,7 @@ psql testdb -c "<m-b>CREATE SUBSCRIPTION mysub CONNECTION 'dbname=testdb host=pu
         ビュー<m-b>pg_stat_archiver</m-b>を確認したり、ディレクトリ<m-b>arvhive_status</m-b>を直接確認するのもよい。
     </p>
 
-    <h3>PITRの仕組み</h3>
-    <h4>リカバリの流れ</h4>
+    <h3>PITRの流れ</h3>
     <ol>
         <li><m-b>pg_control</m-b>ファイルを読み込む</li>
         <li><m-b>postgresql.conf</m-b>を読み込む(PostgreSQL11以前は<m-b>recovery.conf</m-b>)</li>
@@ -4340,20 +4339,23 @@ psql testdb -c "<m-b>CREATE SUBSCRIPTION mysub CONNECTION 'dbname=testdb host=pu
         3.でLSNを読み取れない場合、<m-b>pg_control</m-b>の情報を元にリカバリを開始する。<br>
         4.で、ファイルbackup_labelは<m-b>backup_label.old</m-b>にリネームされる。
     </p>
-    <h4>pg_controlファイル</h4>
+
+    <h3>pg_controlファイル</h3>
     <p>
         リカバリ時に参照されるpg_controlファイルは、ディレクトリ<m-b>grobal</m-b>配下に格納されている。
         バイナリファイルのため、コマンド<m-b>pg_controldata</m-b>を用いて内容を確認する。
         リカバリで用いられる<m-b>Latest checkpointing location</m-b>や<m-b>Minimum recovery ending location</m-b>、
         現在のデータベースクラスタの状況を示す<m-b>Database cluster status</m-b>など、PostgreSQLの運用に関する情報をプロパティとして持つ。
     </p>
-    <h4>リカバリで設定する3つの項目</h4>
+
+    <h3>PITRで設定する3つの項目</h3>
     <ol>
         <li><m-b>スタンバイサーバ</m-b>の設定</li>
         <li><m-b>アーカイブリカバリ</m-b>の設定</li>
         <li><m-b>リカバリ対象</m-b>の設定</li>
     </ol>
-    <h4>アーカイブリカバリの設定</h4>
+
+    <h3>アーカイブリカバリの設定</h3>
     <p>
         アーカイブリカバリの設定では、3つのパラメータを設定する。<br>
         1つ目は、再適用するWALファイルをアーカイブ領域からオンラインWAL領域にリストアするためのコマンドである<m-b>restore_command</m-b>である。
@@ -4388,7 +4390,8 @@ psql testdb -c "<m-b>CREATE SUBSCRIPTION mysub CONNECTION 'dbname=testdb host=pu
         不要なアーカイブファイルを消去する目的で使用する。
         エスケープ文字<m-b>%r</m-b>を使用でき、コマンド<m-b>pg_archivecleanup</m-b>と併用して、アーカイブファイルを削除することができる。
     </p>
-    <h4>リカバリ対象の設定</h4>
+
+    <h3>リカバリ対象の設定</h3>
     <p>
         どの時点までリカバリするかを指定できる。
         次のパラメータを設定することができる。
