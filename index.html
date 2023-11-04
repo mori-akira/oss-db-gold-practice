@@ -2953,8 +2953,7 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         <m-b>/etc/sysctl.conf</m-b>ファイルに設定値を保存することが推奨される。
     </p>
 
-    <h3>PostgreSQLのメモリ設定</h3>
-    <h4>共有メモリ域の設定</h4>
+    <h3>共有メモリ域の設定</h3>
     <table>
         <thead>
             <tr>
@@ -3009,7 +3008,8 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         仮にバッファから追い出されても、実際は<m-b>ディスクキャッシュ</m-b>から読み出せるケースが多いことも関連する。<br>
         共有メモリ域のその他のパラメータは、デフォルト設定で十分なケースがほとんどである。
     </p>
-    <h4>プロセスメモリ域の設定</h4>
+
+    <h3>プロセスメモリ域の設定</h3>
     <table>
         <thead>
             <tr>
