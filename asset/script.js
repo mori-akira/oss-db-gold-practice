@@ -24,9 +24,6 @@ const PracticeProgressDao = {
             await PracticeProgressDao.delete(e.id);
         });
     },
-    clear: async () => {
-        await db.PracticeProgress.clear();
-    },
     readAll: async () => {
         return await db.PracticeProgress.toArray();
     },
@@ -137,7 +134,7 @@ const initPracticeProgress = async () => {
     const option = window.confirm('学習進捗を初期化しますか？');
     if (option) {
         Object.keys(practiceProgressData).forEach(e => practiceProgressData[e] = false);
-        await PracticeProgressDao.clear();
+        await PracticeProgressDao.add(practiceProgressData);
         $.makeArray($('input')).filter(e => $(e).attr('id').startsWith('toggle-complete-') && $(e).prop('checked'))
             .forEach(e => $(e).prop('checked', false));
         toggleContentTreeVisibility();
