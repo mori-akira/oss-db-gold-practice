@@ -3988,7 +3988,7 @@ synchronous_standby_names = <m-b>'sby'</m-b>
     </p>
 
     <h2>12章 論理レプリケーション</h2>
-    
+
     <h3>論理レプリケーションの仕組み</h3>
     <p>
         論理レプリケーションとは、PostgreSQL10で導入されたレプリケーション機能である。
@@ -6633,6 +6633,163 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
     <p>
         関数<m-b>crypt()</m-b>で使用する、パスワードの<m-b>ソルト</m-b>を生成する関数。
         第1引数にハッシュ化アルゴリズムを指定し、<m-b>des</m-b>、<m-b>xdes</m-b>、<m-b>md5</m-b>、<m-b>bf</m-b>を指定することができる。
+    </p>
+
+    <h3>EXPLAINの対象となるSQLコマンド</h3>
+    <ul>
+        <li><m-b>SELECT</m-b></li>
+        <li><m-b>INSERT</m-b></li>
+        <li><m-b>UPDATE</m-b></li>
+        <li><m-b>DELETE</m-b></li>
+        <li><m-b>VALUES</m-b></li>
+        <li><m-b>EXECUTE</m-b></li>
+        <li><m-b>DECLARE</m-b></li>
+        <li><m-b>CREATE TABLE AS</m-b></li>
+        <li><m-b>CREATE MATERIALIZED VIEW</m-b></li>
+        <li><m-b>REFRESH MATERIALIZED VIEW</m-b></li>
+    </ul>
+
+    <h3>ビューpg_locksのカラムlocktypeの種類</h3>
+    <ul>
+        <li><m-b>relation</m-b></li>
+        <li><m-b>extend</m-b></li>
+        <li><m-b>page</m-b></li>
+        <li><m-b>tuple</m-b></li>
+        <li><m-b>transactionid</m-b></li>
+        <li><m-b>virtualxid</m-b></li>
+        <li><m-b>object</m-b></li>
+        <li><m-b>userlock</m-b></li>
+        <li><m-b>advisory</m-b></li>
+    </ul>
+
+    <h3>oid2name</h3>
+    <p>
+        OIDとPostgreSQLデータディレクトリ内の<m-b>ファイルノード</m-b>を解決するコマンド。
+        PostgreSQLのファイル構造を確認するためのユーティリティプログラムである。
+        対象のデータベースに接続し、<m-b>OID</m-b>、<m-b>ファイルノード</m-b>、<m-b>テーブル名</m-b>を抽出する。
+    </p>
+    <h4>主なオプション</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>オプション</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>-f</m-b></td>
+                <td>表示するファイルノードを指定する</td>
+            </tr>
+            <tr>
+                <td><m-b>-i</m-b></td>
+                <td>インデックスおよびシーケンスに関する情報も表示する</td>
+            </tr>
+            <tr>
+                <td><m-b>-o</m-b></td>
+                <td>表示するOIDを指定する</td>
+            </tr>
+            <tr>
+                <td><m-b>-t</m-b></td>
+                <td>表示するテーブル名のパターンを指定する</td>
+            </tr>
+            <tr>
+                <td><m-b>-x</m-b></td>
+                <td>表示する情報を追加する(テーブル空間名、スキーマ名、OID)</td>
+            </tr>
+            <tr>
+                <td><m-b>-d</m-b></td>
+                <td>接続するデータベース</td>
+            </tr>
+            <tr>
+                <td><m-b>-H</m-b></td>
+                <td>接続するホスト</td>
+            </tr>
+            <tr>
+                <td><m-b>-p</m-b></td>
+                <td>接続するポート番号</td>
+            </tr>
+            <tr>
+                <td><m-b>-U</m-b></td>
+                <td>接続に使用するユーザ名</td>
+            </tr>
+            <tr>
+                <td><m-b>-P</m-b></td>
+                <td>接続に使用するパスワード</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>アクセス統計情報</h3>
+    <p>
+        ANALYZEコマンド等を利用して取得する統計情報とは異なり、<m-b>stats collector</m-b>プロセスが<m-b>500ms</m-b>毎に収集する情報である。(デフォルト設定)
+        これは、<m-b>pg_stat_database</m-b>や<m-b>pg_stat_all_tables</m-b>などの、統計情報ビューによって参照でき、
+        <m-b>システム全体の稼働状況の調査</m-b>や<m-b>問題点の発見</m-b>等を目的に使用する。
+    </p>
+
+    <h3>pg_stat_bgwriterビュー</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>カラム</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>checkpoints_timed</m-b></td>
+                <td>これまでに実行された、スケジュールされたチェックポイントの数</td>
+            </tr>
+            <tr>
+                <td><m-b>checkpoints_req</m-b></td>
+                <td>これまでに実行された、要求されたチェックポイント数</td>
+            </tr>
+            <tr>
+                <td><m-b>checkpoint_write_time</m-b></td>
+                <td>チェックポイント処理において、ディスクへの書き出しに費やされた総時間(ミリ秒)</td>
+            </tr>
+            <tr>
+                <td><m-b>checkpoint_sync_time</m-b></td>
+                <td>チェックポイント処理において、ディスクへの同期に費やされた総時間(ミリ秒)</td>
+            </tr>
+            <tr>
+                <td><m-b>bufferes_checkpoint</m-b></td>
+                <td>チェックポイントで書き出されたバッファ数</td>
+            </tr>
+            <tr>
+                <td><m-b>bufferes_clean</m-b></td>
+                <td>バックグラウンドライタにより書き出されたバッファ数</td>
+            </tr>
+            <tr>
+                <td><m-b>maxwritten_clean</m-b></td>
+                <td>バックグラウンドライタが書き出すバッファ数が多すぎるために、整理用スキャンを停止した回数</td>
+            </tr>
+            <tr>
+                <td><m-b>buffers_backend</m-b></td>
+                <td>バックエンドにより直接書き出されたバッファ数</td>
+            </tr>
+            <tr>
+                <td><m-b>buffers_backend_fsync</m-b></td>
+                <td>
+                    バックエンドが独自にfsync呼び出しを実行した回数<br>
+                    通常はバックエンドが独自に書き込みを行った場合も、バックグラウンドライタが吸収する。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>buffers_alloc</m-b></td>
+                <td>割り当てられたバッファ数</td>
+            </tr>
+            <tr>
+                <td><m-b>stats_reset</m-b></td>
+                <td>この統計情報がリセットされた最終日時</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>インデックススキャンとシーケンシャルスキャンの設定</h3>
+    <p>
+        パラメータ<m-b>enable_seqscan</m-b>をoffに設定すると、プランナは<m-b>シーケンシャルスキャン</m-b>をなるべく選択しなくなる。
+        パラメータ<m-b>enable_indexscan</m-b>をoffに設定すると、プランナは<m-b>インデックススキャン</m-b>を選択しなくなる。
     </p>
 
     <h2>その他調査まとめ</h2>
