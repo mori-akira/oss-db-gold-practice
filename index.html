@@ -3426,7 +3426,7 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
     <h4>walsender/walreceiverプロセスの処理</h4>
     <p>
         walsenderとwalreceiverがWALをやり取りするとき、<m-b>walreceiver</m-b>が主導して処理が行われる。
-        このため、パラメータ<m-b>max_wal_receiver</m-b>の限り、動的にスタンバイを増設できる。<br>
+        このため、パラメータ<m-b>max_wal_senders</m-b>の限り、動的にスタンバイを増設できる。<br>
         walreceiverがWALレコードを受け取ると、次の順に処理が行われる。
     </p>
     <ol>
@@ -3879,7 +3879,7 @@ synchronous_standby_names = <m-b>'sby'</m-b>
     <h3>プライマリ/スタンバイの監視</h3>
     <h4>walsender/walreceiverプロセスの動作確認とタイムアウト</h4>
     <p>
-        walsender/walreceiverプロセスの動作確認は、プロセス自身の存在確認だけでなく、ネットワーク以上による待ちが発生していないかも確認する必要がある。
+        walsender/walreceiverプロセスの動作確認は、プロセス自身の存在確認だけでなく、ネットワーク異常による待ちが発生していないかも確認する必要がある。
         待ち状態を確認するには、パラメータ<m-b>wal_sender_timeout</m-b>と<m-b>wal_receiver_timeout</m-b>を設定し、
         タイムアウト時間を指定する。(デフォルトは<m-b>60秒</m-b>)
         これにより、プロセスがタイムアウトした場合に<m-b>ログ</m-b>が出力され、<m-b>wal_sender</m-b>プロセスは停止する。
@@ -3888,7 +3888,7 @@ synchronous_standby_names = <m-b>'sby'</m-b>
     <h4>レプリケーションの状況確認</h4>
     <p>
         レプリケーションの状況を確認するには、walreceiverプロセスにおけるWAL受信位置(<m-b>receive位置</m-b>)とWAL適用位置(<m-b>replay位置</m-b>)を確認すればよい。
-        位置確認には<m-b>pg_stat_replication</m-b>ビューを用いる方法があるが、次の点に注意点がある。
+        位置確認には<m-b>pg_stat_replication</m-b>ビューを用いる方法があるが、次の点に注意する。
         このビューの更新頻度は、<m-b>write位置</m-b>または<m-b>flush位置</m-b>に変更があったとき、または<m-b>wal_receiver_status_interval</m-b>によって設定されている時間が経過したときである。
         デフォルトで<m-b>wal_receiver_status_interval</m-b>は<m-b>10秒</m-b>なので、<m-b>replay</m-b>位置は若干の差異が生じる可能性がある。<br>
         この差異が許容できない場合、スタンバイで直接replay位置を確認する必要がある。
@@ -4167,7 +4167,7 @@ ALTER TABLE テーブル名 <m-b>REPLICA IDENTITY 設定値</m-b>;
         また、PostgreSQL14では、<m-b>pg_stat_replication_slots</m-b>ビューが追加され、管理がしやすくなっている。<br>
         サブスクライバが故障した場合、レプリケーションスロットによって<m-b>パブリッシャ</m-b>側の<m-b>WAL</m-b>領域にログが残る。
         復旧に時間が要する状況でこのログを削除したい場合、<m-b>pg_drop_replication_slot</m-b>関数でレプリケーションスロットを削除し、
-        <m-b>pg_create_replication_slots</m-b>関数でレプリケーションスロットを作成する手順を取る。
+        <m-b>pg_create_replication_slot</m-b>関数でレプリケーションスロットを作成する手順を取る。
     </p>
 
     <h3>論理レプリケーションの設定手順まとめ</h3>
@@ -4252,7 +4252,7 @@ psql testdb -c "<m-b>CREATE SUBSCRIPTION mysub CONNECTION 'dbname=testdb host=pu
             ログなどを参照し、該当する行を削除する。
         </li>
         <li>
-            <b>サブスクライブ側の操作をサブスクライバ側で<m-b>スキップ</m-b>する</b><br>
+            <b>パブリッシャ側の操作をサブスクライバ側で<m-b>スキップ</m-b>する</b><br>
             サブスクライバ側で、コンフリクトが発生したパブリッシャの<m-b>サーバ名</m-b>と、スキップ後の<m-b>LSN</m-b>を指定し、
             関数<m-b>pg_replication_origin_advance</m-b>を実行する。
             パブリッシャのサーバ名は、ビュー<m-b>pg_replication_origin_status</m-b>のカラム<m-b>external_id</m-b>の値を参照する。
@@ -4340,7 +4340,7 @@ psql testdb -c "<m-b>CREATE SUBSCRIPTION mysub CONNECTION 'dbname=testdb host=pu
 
     <h3>pg_controlファイル</h3>
     <p>
-        リカバリ時に参照されるpg_controlファイルは、ディレクトリ<m-b>grobal</m-b>配下に格納されている。
+        リカバリ時に参照されるpg_controlファイルは、ディレクトリ<m-b>global</m-b>配下に格納されている。
         バイナリファイルのため、コマンド<m-b>pg_controldata</m-b>を用いて内容を確認する。
         リカバリで用いられる<m-b>Latest checkpointing location</m-b>や<m-b>Minimum recovery ending location</m-b>、
         現在のデータベースクラスタの状況を示す<m-b>Database cluster status</m-b>など、PostgreSQLの運用に関する情報をプロパティとして持つ。
@@ -4386,7 +4386,8 @@ psql testdb -c "<m-b>CREATE SUBSCRIPTION mysub CONNECTION 'dbname=testdb host=pu
     <p>
         2つ目は、リカバリ中のリスタートポイントのたびに実行するコマンドである<m-b>arvhive_cleanup_command</m-b>である。
         不要なアーカイブファイルを消去する目的で使用する。
-        エスケープ文字<m-b>%r</m-b>を使用でき、コマンド<m-b>pg_archivecleanup</m-b>と併用して、アーカイブファイルを削除することができる。
+        エスケープ文字<m-b>%r</m-b>を使用でき、コマンド<m-b>pg_archivecleanup</m-b>と併用して、アーカイブファイルを削除することができる。<br>
+        3つ目は、リカバリが完了したときに実行するコマンドを指定する<m-b>recovery_end_command</m-b>である。
     </p>
 
     <h3>リカバリ対象の設定</h3>
