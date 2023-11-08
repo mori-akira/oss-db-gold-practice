@@ -6800,6 +6800,100 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         デフォルトでは<m-b>on</m-b>である。
     </p>
 
+    <h3>ALTER SYSTEM</h3>
+    <p>
+        データベースクラスタ全体にわたる<m-b>パラメータ</m-b>を設定/変更する際に使用する。
+        このコマンドを用いると、設定したパラメータをファイル<m-b>postgresq.auto.conf</m-b>に書き出し、サーバ起動時にpostgresq.confの後に読み込まれる。
+        パラメータにキーワード<m-b>DEFAULT</m-b>を指定する、または<m-b>RESET</m-b>句を使用すると、<m-b>postgresq.auto.conf</m-b>からパラメータのエントリを削除する。
+        すべてのエントリを削除する場合、<m-b>RESET ALL</m-b>句を指定する。
+        ALTER SYSTEMで設定された値は、<m-b>SIGHUP</m-b>シグナルを送った場合、またはコマンド<m-b>pg_ctl reload</m-b>を使用した場合に有効となる。
+        このコマンドを実行できるのは<m-b>スーパユーザ</m-b>のみである。
+    </p>
+
+    <h3>vacuumdb</h3>
+    <p>
+        VACUUMコマンドをラップし、データベースの不要領域の回収を行うユーティリティコマンドである。
+    </p>
+    <h4>vacuumdbのオプション</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>オプション</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>-a</m-b><br><m-b>--all</m-b></td>
+                <td>すべてのデータベースに対してバキュームを行う</td>
+            </tr>
+            <tr>
+                <td><m-b>-d データベース名</m-b><br><m-b>--dbname=データベース名</m-b></td>
+                <td>
+                    バキューム対象のデータベースを指定する<br>
+                    このオプション及び<m-b>--all</m-b>が指定されない場合、環境変数<m-b>PGDATABASE</m-b>から接続先のデータベースを読み取る。
+                    上記の環境変数も指定されていない場合、<m-b>接続に用いるユーザ名</m-b>からデータベースへの接続を試みる。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>-e</m-b><br><m-b>--echo</m-b></td>
+                <td>実行するコマンドを表示する</td>
+            </tr>
+            <tr>
+                <td><m-b>-f</m-b><br><m-b>--full</m-b></td>
+                <td>VACUUM FULLを行う</td>
+            </tr>
+            <tr>
+                <td><m-b>-F</m-b><br><m-b>--freeze</m-b></td>
+                <td>FREEZE処理を行う</td>
+            </tr>
+            <tr>
+                <td><m-b>-q</m-b><br><m-b>--quiet</m-b></td>
+                <td>進行メッセージを表示しない</td>
+            </tr>
+            <tr>
+                <td><m-b>-t テーブル名</m-b><br><m-b>--table=テーブル名</m-b></td>
+                <td>tableのみに対しVACUUMを行う</td>
+            </tr>
+            <tr>
+                <td><m-b>-z</m-b><br><m-b>--analyze</m-b></td>
+                <td>テーブルの統計情報も更新する</td>
+            </tr>
+            <tr>
+                <td><m-b>-Z</m-b><br><m-b>--analyze-only</m-b></td>
+                <td>テーブルの統計情報の更新のみを行う</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>接続に関する環境変数</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>環境変数</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>PGDATABASE</m-b></td>
+                <td>接続するデータベース名</td>
+            </tr>
+            <tr>
+                <td><m-b>PGHOST</m-b></td>
+                <td>接続するホスト名</td>
+            </tr>
+            <tr>
+                <td><m-b>PGPORT</m-b></td>
+                <td>接続するポート番号</td>
+            </tr>
+            <tr>
+                <td><m-b>PGUSER</m-b></td>
+                <td>接続するユーザ名</td>
+            </tr>
+        </tbody>
+    </table>
+
     <h2>その他調査まとめ</h2>
 
     <h3>関数の変動性分類</h3>
