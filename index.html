@@ -7128,6 +7128,46 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         </a>
     </blockquote>
 
+    <h3>開発者向けの設定</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>パラメータ</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>allow_system_table_mods</m-b></td>
+                <td>システムテーブルの構造変更を許可するか</td>
+            </tr>
+            <tr>
+                <td><m-b>ignore_system_indexes</m-b></td>
+                <td>
+                    システムテーブルの読み込み時にインデックスを無視するか<br>
+                    テーブル更新時の書き込みは無視しない。
+                    障害があるシステムインデックスを復旧する際に有用となる。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>post_auth_delay</m-b></td>
+                <td>サーバプロセスが始まり認証手続きが終わった後に、指定した行数の遅延が発生する</td>
+            </tr>
+            <tr>
+                <td><m-b>pre_auth_delay</m-b></td>
+                <td>サーバプロセスが始まり認証手続きが終わる前に、指定した行数の遅延が発生する</td>
+            </tr>
+            <tr>
+                <td><m-b>trace_notify</m-b></td>
+                <td>LISTENとNOTIFYコマンドのための大量のデバッグを表示する</td>
+            </tr>
+            <tr>
+                <td><m-b>ignore_checksum_failure</m-b></td>
+                <td>読み込み過程でチェックサム障害が発生しても、それを無視して処理を継続するか</td>
+            </tr>
+        </tbody>
+    </table>
+
     <h2>その他調査まとめ</h2>
 
     <h3>関数の変動性分類</h3>
