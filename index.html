@@ -7116,6 +7116,18 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         </tbody>
     </table>
 
+    <h3>WALの修正</h3>
+    <p>
+        WALが壊れてしまうとPostgreSQLは読みだすWALが分からなくなり、起動ができなくなる。
+        このような場合、<m-b>pg_resetwal</m-b>コマンドを用いて修復ができる。
+        このコマンドは、正常な位置でWALが読み書きできるようにPostgreSQL内部の制御情報を修正する。
+    </p>
+    <blockquote>
+        <a href="https://www.postgresql.jp/docs/12/app-pgresetwal.html" target="_blank">
+            pg_resetwal
+        </a>
+    </blockquote>
+
     <h2>その他調査まとめ</h2>
 
     <h3>関数の変動性分類</h3>
@@ -7167,18 +7179,6 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         テーブル名またはテーブルの<m-b>oid</m-b>を引数に渡す。<br>
         ビューを引数に指定した場合、結果は<m-b>0</m-b>となる。
     </p>
-
-    <h3>WALの修正</h3>
-    <p>
-        WALが壊れてしまうとPostgreSQLは読みだすWALが分からなくなり、起動ができなくなる。
-        このような場合、<m-b>pg_resetwal</m-b>コマンドを用いて修復ができる。
-        このコマンドは、正常な位置でWALが読み書きできるようにPostgreSQL内部の制御情報を修正する。
-    </p>
-    <blockquote>
-        <a href="https://www.postgresql.jp/docs/12/app-pgresetwal.html" target="_blank">
-            pg_resetwal
-        </a>
-    </blockquote>
 
     <h3>contribモジュール</h3>
     <p>
