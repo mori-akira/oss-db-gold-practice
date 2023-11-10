@@ -6803,8 +6803,8 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
     <h3>ALTER SYSTEM</h3>
     <p>
         データベースクラスタ全体にわたる<m-b>パラメータ</m-b>を設定/変更する際に使用する。
-        このコマンドを用いると、設定したパラメータをファイル<m-b>postgresq.auto.conf</m-b>に書き出し、サーバ起動時にpostgresq.confの後に読み込まれる。
-        パラメータにキーワード<m-b>DEFAULT</m-b>を指定する、または<m-b>RESET</m-b>句を使用すると、<m-b>postgresq.auto.conf</m-b>からパラメータのエントリを削除する。
+        このコマンドを用いると、設定したパラメータをファイル<m-b>postgresql.auto.conf</m-b>に書き出し、サーバ起動時にpostgresql.confの後に読み込まれる。
+        パラメータにキーワード<m-b>DEFAULT</m-b>を指定する、または<m-b>RESET</m-b>句を使用すると、<m-b>postgresql.auto.conf</m-b>からパラメータのエントリを削除する。
         すべてのエントリを削除する場合、<m-b>RESET ALL</m-b>句を指定する。
         ALTER SYSTEMで設定された値は、<m-b>SIGHUP</m-b>シグナルを送った場合、またはコマンド<m-b>pg_ctl reload</m-b>を使用した場合に有効となる。
         このコマンドを実行できるのは<m-b>スーパユーザ</m-b>のみである。
@@ -6890,6 +6890,104 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
             <tr>
                 <td><m-b>PGUSER</m-b></td>
                 <td>接続するユーザ名</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>pgstattuple</h3>
+    <p>
+        contribモジュールのpgstattupleは、タプルレベルの<m-b>統計情報</m-b>を取得する各種関数を提供する。
+    </p>
+    <h4>各種関数と呼び出し結果</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>関数</th>
+                <th>説明</th>
+                <th>呼び出し結果</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="9"><m-b>pgstattuple</m-b></td>
+                <td rowspan="9">テーブルに関する統計情報</td>
+                <td><m-b>table_len</m-b></td>
+                <td>リレーションの物理サイズ(バイト単位)</td>
+            </tr>
+            <tr>
+                <td><m-b>tuple_count</m-b></td>
+                <td>有効なタプル数</td>
+            </tr>
+            <tr>
+                <td><m-b>tuple_len</m-b></td>
+                <td>有効なタプルの物理サイズ(バイト単位)</td>
+            </tr>
+            <tr>
+                <td><m-b>tuple_percent</m-b></td>
+                <td>有効なタプルの割合</td>
+            </tr>
+            <tr>
+                <td><m-b>dead_tuple_count</m-b></td>
+                <td>無効なタプル数</td>
+            </tr>
+            <tr>
+                <td><m-b>deat_tuple_len</m-b></td>
+                <td>無効なタプルの物理サイズ(バイト単位)</td>
+            </tr>
+            <tr>
+                <td><m-b>dead_tuple_percent</m-b></td>
+                <td>無効なタプルの割合</td>
+            </tr>
+            <tr>
+                <td><m-b>free_space</m-b></td>
+                <td>空き領域サイズ(バイト単位)</td>
+            </tr>
+            <tr>
+                <td><m-b>free_percent</m-b></td>
+                <td>空き領域の割合</td>
+            </tr>
+            <tr>
+                <td rowspan="10"><m-b>pgstatindex</m-b></td>
+                <td rowspan="10"><m-b>B-Tree</m-b>インデックスに関する統計情報</td>
+                <td><m-b>version</m-b></td>
+                <td>B-Treeバージョン番号</td>
+            </tr>
+            <tr>
+                <td><m-b>tree_level</m-b></td>
+                <td>ルートページのツリーレベル</td>
+            </tr>
+            <tr>
+                <td><m-b>index_size</m-b></td>
+                <td>インデックス内の総ページ数</td>
+            </tr>
+            <tr>
+                <td><m-b>root_block_no</m-b></td>
+                <td>ルートブロックの場所</td>
+            </tr>
+            <tr>
+                <td><m-b>internal_pages</m-b></td>
+                <td>インターナルページ数</td>
+            </tr>
+            <tr>
+                <td><m-b>leaf_pages</m-b></td>
+                <td>リーフページ数</td>
+            </tr>
+            <tr>
+                <td><m-b>empty_pages</m-b></td>
+                <td>空ページ数</td>
+            </tr>
+            <tr>
+                <td><m-b>deleted_pages</m-b></td>
+                <td>削除ページ数</td>
+            </tr>
+            <tr>
+                <td><m-b>avg_leaf_density</m-b></td>
+                <td>リーフページの平均密度</td>
+            </tr>
+            <tr>
+                <td><m-b>leaf_fragmentation</m-b></td>
+                <td>リーフページの断片化</td>
             </tr>
         </tbody>
     </table>
