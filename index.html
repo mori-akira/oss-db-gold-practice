@@ -7000,6 +7000,122 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         また、無効化する際はパラメータ<m-b>full_page_writes</m-b>も同時に無効化することを検討する。
     </p>
 
+    <h3>通知</h3>
+    <p>
+        接続するクライアントにPostgreSQLを用いて通知を送りたい場合、コマンド<m-b>LISTEN</m-b>で通知チャンネルを作成し、コマンド<m-b>NOTIFY</m-b>または関数<m-b>pg_notify</m-b>で通知を送る。
+        送る情報には、指定するペイロード、セッションの<m-b>プロセスID</m-b>、<m-b>通知チャンネル名</m-b>などが含まれる。
+    </p>
+
+    <h3>ある時間におけるトランザクションIDの可視性</h3>
+    <p>
+        ある時間におけるトランザクションIDの可視性の情報を扱う型は、<m-b>pg_snapshot</m-b>であり、この情報を<m-b>スナップショット</m-b>という。
+        このテキスト表現は、<m-b>xmin:xmax:xip_list</m-b>である。
+        この型を扱う関数として、次がある。
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>関数</th>
+                <th>引数の型</th>
+                <th>返り値の型</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>pg_current_snapshot</m-b></td>
+                <td>なし</td>
+                <td><m-b>pg_snapshot</m-b></td>
+                <td>どのトランザクションIDがin-progressのなのかを表す現在のスナップショットを返す</td>
+            </tr>
+            <tr>
+                <td><m-b>pg_snapshot_xip</m-b></td>
+                <td><m-b>pg_snapshot</m-b></td>
+                <td><m-b>setof xid8</m-b></td>
+                <td>スナップショットに含まれるin-progressのトランザクションIDの集合を返す</td>
+            </tr>
+            <tr>
+                <td><m-b>pg_snapshot_xmax</m-b></td>
+                <td><m-b>pg_snapshot</m-b></td>
+                <td><m-b>xid8</m-b></td>
+                <td>スナップショットのxmaxを返す</td>
+            </tr>
+            <tr>
+                <td><m-b>pg_snapshot_xmin</m-b></td>
+                <td><m-b>pg_snapshot</m-b></td>
+                <td><m-b>xid8</m-b></td>
+                <td>スナップショットのxminを返す</td>
+            </tr>
+            <tr>
+                <td><m-b>pg_visible_in_snapshot</m-b></td>
+                <td><m-b>xid8</m-b><br><m-b>pg_snapshot</m-b></td>
+                <td><m-b>boolean</m-b></td>
+                <td>与えられたトランザクションIDは、指定されたスナップショットにおいて可視か返す</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>統計情報コレクタが生成する統計情報</h3>
+    <p>
+        統計情報コレクタは、収集した情報を他のPostgreSQLプロセスに渡す場合に、<m-b>一時ファイル</m-b>を利用する。
+        このファイルはパラメータ<m-b>stats_temp_directory</m-b>で指定することができ、デフォルト値は<m-b>pg_stat_tmp</m-b>となっている。
+    </p>
+
+    <h3>pg_stat_sslビュー</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>カラム</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>pid</m-b></td>
+                <td>バックエンドプロセスのプロセスID</td>
+            </tr>
+            <tr>
+                <td><m-b>ssl</m-b></td>
+                <td>接続がSSL接続か</td>
+            </tr>
+            <tr>
+                <td><m-b>version</m-b></td>
+                <td>
+                    使用されているSSLのバージョン<br>
+                    SSL接続されていない場合<m-b>NULL</m-b>となる。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>cipher</m-b></td>
+                <td>
+                    使用されているSSL暗号名<br>
+                    SSL接続されていない場合<m-b>NULL</m-b>となる。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>bits</m-b></td>
+                <td>
+                    使用されている暗号アルゴリズムのビット数<br>
+                    SSL接続されていない場合<m-b>NULL</m-b>となる。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>compression</m-b></td>
+                <td>
+                    SSL圧縮が使用されているか<br>
+                    SSL接続されていない場合<m-b>NULL</m-b>となる。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>clientdn</m-b></td>
+                <td>
+                    使用されているクライアント証明書のDNフィールド<br>
+                    SSL接続されていない場合、またはクライアント証明書が使用されていない場合<m-b>NULL</m-b>となる。
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
     <h2>その他調査まとめ</h2>
 
     <h3>関数の変動性分類</h3>
