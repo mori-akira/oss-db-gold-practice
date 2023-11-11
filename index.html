@@ -1509,32 +1509,32 @@ WHERE relname = 'テーブル名';
                 <td>ページのチェックサム</td>
             </tr>
             <tr>
-                <td><m-b>pg_flags</m-b></td>
+                <td><m-b>pd_flags</m-b></td>
                 <td><m-b>2</m-b></td>
                 <td>フラグ(ビット列)の格納領域</td>
             </tr>
             <tr>
-                <td><m-b>pg_lower</m-b></td>
+                <td><m-b>pd_lower</m-b></td>
                 <td><m-b>2</m-b></td>
                 <td><m-b>空き領域</m-b>の開始個所のページ先頭からのオフセット</td>
             </tr>
             <tr>
-                <td><m-b>pg_upper</m-b></td>
+                <td><m-b>pd_upper</m-b></td>
                 <td><m-b>2</m-b></td>
                 <td><m-b>空き領域</m-b>の終了個所のページ先頭からのオフセット</td>
             </tr>
             <tr>
-                <td><m-b>pg_special</m-b></td>
+                <td><m-b>pd_special</m-b></td>
                 <td><m-b>2</m-b></td>
                 <td><m-b>特殊な空間</m-b>のページ先頭からのオフセット</td>
             </tr>
             <tr>
-                <td><m-b>pg_pagesize_version</m-b></td>
+                <td><m-b>pd_pagesize_version</m-b></td>
                 <td><m-b>2</m-b></td>
                 <td>ページサイズおよびレイアウトのバージョン番号の情報</td>
             </tr>
             <tr>
-                <td><m-b>pg_prune_xid</m-b></td>
+                <td><m-b>pd_prune_xid</m-b></td>
                 <td><m-b>4</m-b></td>
                 <td>ページ内で最古のトランザクションID</td>
             </tr>
@@ -6911,7 +6911,7 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         <tbody>
             <tr>
                 <td rowspan="9"><m-b>pgstattuple</m-b></td>
-                <td rowspan="9">テーブルに関する統計情報</td>
+                <td rowspan="9">タプルに関する統計情報</td>
                 <td><m-b>table_len</m-b></td>
                 <td>リレーションの物理サイズ(バイト単位)</td>
             </tr>
@@ -7151,11 +7151,11 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
             </tr>
             <tr>
                 <td><m-b>post_auth_delay</m-b></td>
-                <td>サーバプロセスが始まり認証手続きが終わった後に、指定した行数の遅延が発生する</td>
+                <td>サーバプロセスが始まり認証手続きが終わった後に、指定した秒数の遅延が発生する</td>
             </tr>
             <tr>
                 <td><m-b>pre_auth_delay</m-b></td>
-                <td>サーバプロセスが始まり認証手続きが終わる前に、指定した行数の遅延が発生する</td>
+                <td>サーバプロセスが始まり認証手続きが始まる　前に、指定した秒数の遅延が発生する</td>
             </tr>
             <tr>
                 <td><m-b>trace_notify</m-b></td>
