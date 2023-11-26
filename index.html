@@ -14,7 +14,7 @@
 
     <h4>資格概要</h4>
     <blockquote>
-        <a href="https://oss-db.jp/outline/gold/v2" target="_blank">OSS-DB Goldのご紹介（Ver.2.0）</a>
+        <a href="https://oss-db.jp/outline/gold" target="_blank">OSS-DB Goldのご紹介（Ver.3.0）</a>
     </blockquote>
 
     <h4>
@@ -302,10 +302,6 @@
             <tr>
                 <td><mask-block>pg_ident.conf</mask-block></td>
                 <td>ident認証およびGSSAPI認証で使用する</td>
-            </tr>
-            <tr>
-                <td><mask-block>recovery.conf</mask-block></td>
-                <td>アーカイブリカバリ用の設定ファイル</td>
             </tr>
             <tr>
                 <td><mask-block>pg_service.conf</mask-block></td>
@@ -907,7 +903,7 @@ host all all 192.168.10.0/24 <m-b>ident map=foo_indent</m-b>
         </li>
     </ul>
 
-    <h4>char型に対する文字列操作の注意点</h4>
+    <h3>char型に対する文字列操作の注意点</h3>
     <p>
         char型の文字列を文字列関数や文字列操作演算子で扱う場合、空白の扱いが異なる場合があるため注意が必要である。<br>
         例えば、char(8)のカラム<code>c</code>と、varchar(8)のカラム<code>v</code>をもつテーブル<code>example</code>に対し、
@@ -1327,7 +1323,8 @@ ALTER TALBE テーブル名 ALTER 列名 <m-b>SET STORAGE 格納方法</m-b>
         <li>物理的な分割によってデータアクセスの範囲を絞り込めるため、特定条件下でI/O負荷を低減し参照性能の改善が見込める。</li>
         <li>パーティションのDROP/TRUNCATEによって一括削除ができるため、特定条件のDELETEよりも処理時間やマシンリソース消費を抑えることができる。</li>
     </ul>
-    <h4>分割方式</h4>
+
+    <h3>宣言的パーティショニングの分割方式</h3>
     <table>
         <thead>
             <tr>
@@ -1359,6 +1356,8 @@ ALTER TALBE テーブル名 ALTER 列名 <m-b>SET STORAGE 格納方法</m-b>
             </tr>
         </tbody>
     </table>
+
+    <h3>宣言的パーティショニングの作成方法</h3>
     <h4>範囲パーティションニングでパーティションテーブルとパーティションを作成</h4>
     <pre><code>
 /* logdateカラムをパーティションキーに指定し、パーティションテーブル作成 */
@@ -1398,7 +1397,8 @@ CREATE TABLE log (
 CREATE TABLE log_1 <m-b>PARTITION OF log FOR VALUES WITH (MODULUS 2, REMAINDER 0)</m-b>;
 CREATE TABLE log_2 <m-b>PARTITION OF log FOR VALUES WITH (MODULUS 2, REMAINDER 1)</m-b>;
     </code></pre>
-    <h4>パーティショニングの要否の判断基準</h4>
+
+    <h3>パーティショニングの要否の判断基準</h3>
     <p>
         次のいずれかの条件を満たす場合、パーティショニングの使用を検討することが推奨される。
     </p>
@@ -1437,8 +1437,7 @@ WHERE relname = 'テーブル名';
         ただし、テーブルの<m-b>パーティショニング</m-b>を用いれば、それよりも大きいサイズのテーブルを管理することもできる。
     </p>
 
-    <h3>テーブルファイル</h3>
-    <h4>テーブルファイルのページ構成</h4>
+    <h3>テーブルファイルのページ構成</h3>
     <table>
         <thead>
             <tr>
@@ -1488,7 +1487,8 @@ WHERE relname = 'テーブル名';
             </tr>
         </tbody>
     </table>
-    <h4>ページヘッダの構成</h4>
+
+    <h3>ページヘッダの構成</h3>
     <table>
         <thead>
             <tr>
@@ -1540,7 +1540,8 @@ WHERE relname = 'テーブル名';
             </tr>
         </tbody>
     </table>
-    <h4>アイテムIDデータの構成</h4>
+
+    <h3>アイテムIDデータの構成</h3>
     <table>
         <thead>
             <tr>
@@ -1553,7 +1554,7 @@ WHERE relname = 'テーブル名';
             <tr>
                 <td><m-b>lp_off</m-b></td>
                 <td><m-b>15</m-b></td>
-                <td>対応するタプルの開始オフセット(<m-b>バイト数</m-b>)</td>
+                <td>対応するタプルの開始オフセット(バイト数)</td>
             </tr>
             <tr>
                 <td><m-b>lp_flags</m-b></td>
@@ -1571,7 +1572,7 @@ WHERE relname = 'テーブル名';
             <tr>
                 <td><m-b>lp_len</m-b></td>
                 <td><m-b>15</m-b></td>
-                <td>対応するタプルの長さ(<m-b>バイト数</m-b>)</td>
+                <td>対応するタプルの長さ(バイト数)</td>
             </tr>
         </tbody>
     </table>
@@ -1581,7 +1582,8 @@ WHERE relname = 'テーブル名';
     <pre><code>
 <m-b>32ビット</m-b>(<m-b>4バイト</m-b>) × ページ内に格納されている行数
     </code></pre>
-    <h4>ページ数の概算</h4>
+
+    <h3>ページ数の概算</h3>
     <p>
         ページサイズを8192バイト、行の想定平均サイズをTS、想定レコード数をRN、FILLFACTORをFFとすると、総ページ数の概算値は次式で求められる。
     </p>
@@ -1738,6 +1740,8 @@ WHERE relname = 'テーブル名';
             一般的にFILLFACTORを<m-b>90%</m-b>程度に設定すればHOTは十分機能するといわれ、下限は<m-b>70%</m-b>程度が適切と考えられる。
         </li>
     </ul>
+
+    <h3>FILLFACTORの指定/確認</h3>
     <h4>CREATE TABLE文でFILLFACTORを指定</h4>
     <pre><code>
 CREATE TABLE tbl(
@@ -1828,7 +1832,8 @@ sample2 | <m-b>    (空白)    </m-b>
         通常、同じテーブルを別々のテーブル空間に配置することはできないが、
         テーブルパーティショニングを用いて<m-b>パーティション</m-b>を別々のテーブル空間に配置することで、これを実現することができる。
     </p>
-    <h4>テーブル空間の作成</h4>
+
+    <h3>テーブル空間の作成</h3>
     <pre><code>
 CREATE <m-b>TABLESPACE</m-b> テーブル空間名 <m-b>LOCATION</m-b> 'テーブル空間のディレクトリパス'
     </code></pre>
@@ -1868,7 +1873,8 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         部分インデックスを用いることで、出現頻度の低い値に対してのみインデックスを作成できる。<br>
         部分インデックスを作成する場合、CREATE INDEX文に<m-b>WHERE</m-b>句を付加し、条件を指定する。
     </p>
-    <h4>インデックスの種別</h4>
+
+    <h3>インデックスの種別</h3>
     <table>
         <thead>
             <tr>
@@ -2123,7 +2129,8 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
             </tr>
         </tbody>
     </table>
-    <h4>PostgreSQL15のpublicスキーマの仕様変更</h4>
+
+    <h3>PostgreSQL15のpublicスキーマの仕様変更</h3>
     <p>
         PostgreSQL15では、publicスキーマに定義済みロールの<m-b>pg_database_owner</m-b>が適用された。
         これにより、publicスキーマへのCREATE権限を持つロールが、<m-b>データベースの所有者</m-b>に制限された。
@@ -2315,7 +2322,8 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
             </tr>
         </tbody>
     </table>
-    <h4>オンラインバックアップの手法</h4>
+
+    <h3>オンラインバックアップの手法</h3>
     <table>
         <thead>
             <tr>
@@ -2344,7 +2352,8 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
             </tr>
         </tbody>
     </table>
-    <h4>リカバリ要件とリカバリ方式の整理</h4>
+
+    <h3>リカバリ要件とリカバリ方式の整理</h3>
     <ul>
         <li>
             バックアップ取得時点まで戻したい<br>
@@ -2365,8 +2374,7 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         </li>
     </ul>
 
-    <h3>各バックアップ方式の注意点</h3>
-    <h4>コールドバックパップ</h4>
+    <h3>コールドバックパップの注意点</h3>
     <p>
         PostgreSQLを停止し、DBクラスタを丸ごとバックアップすれば完了である。<br>
         任意のテーブル空間を作成している場合、DBクラスタ配下の<m-b>pg_tblspc</m-b>ディレクトリには、
@@ -2377,7 +2385,8 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         DBクラスタ作成時にデフォルトと異なる位置にWAL領域を指定する場合、<m-b>pg_wal</m-b>配下は<m-b>シンボリックリンク</m-b>となる。
         そのため、実体のWAL領域のWALファイルもバックアップする必要がある。
     </p>
-    <h4>オンライン論理バックアップ</h4>
+
+    <h3>オンライン論理バックアップの注意点</h3>
     <p>
         PostgreSQL付属コマンドの<m-b>pg_dump</m-b>または<m-b>pg_dumpall</m-b>を用いて取得する。<br>
         pg_dumpでは、<m-b>プレーンテキスト</m-b>、<m-b>カスタム</m-b>、<m-b>tar</m-b>、<m-b>ディレクトリ</m-b>などの形式でバックアップを取得できる。
@@ -2390,7 +2399,8 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         pg_dump、pg_dumpallともに、<m-b>テーブル空間</m-b>、<m-b>ラージオブジェクト</m-b>のバックアップに対応している。
         また、<m-b>設定ファイル</m-b>類のバックアップには対応していない。
     </p>
-    <h4>オンライン物理バックアップ</h4>
+
+    <h3>オンライン物理バックアップの注意点</h3>
     <p>
         コールドバックアップと同様に、WAL領域も確実にバックアップする必要がある。
         <m-b>pg_basebackup</m-b>コマンドを使用する場合、PostgreSQLが<m-b>レプリケーション</m-b>を行える設定になっている必要があるが、
@@ -2663,7 +2673,7 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
             </tr>
             <tr>
                 <td><m-b>log_filename</m-b></td>
-                <td><m-b>'postgresql-%a.log</m-b></td>
+                <td><m-b>'postgresql-%a.log'</m-b></td>
                 <td>
                     ログファイル名<br>
                     <m-b>strftime</m-b>で標準的に扱われるエスケープシーケンス(%)が使用できる。
@@ -3129,8 +3139,7 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         OSのI/Oスケジューラがオーバヘッドとなってしまうことがあり、その場合は<m-b>none</m-b>に設定することも検討する。
     </p>
 
-    <h3>PostgreSQLのディスク設定</h3>
-    <h4>システムに制限を設けるパラメータ</h4>
+    <h3>システムに制限を設けるパラメータ</h3>
     <table>
         <thead>
             <tr>
@@ -3155,7 +3164,8 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
             </tr>
         </tbody>
     </table>
-    <h4>ライタに関して、性能に影響を与えるパラメータ</h4>
+
+    <h3>ライタに関して、性能に影響を与えるパラメータ</h3>
     <table>
         <thead>
             <tr>
@@ -3196,7 +3206,8 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
             </tr>
         </tbody>
     </table>
-    <h4>WALに関して、性能に影響を与えるパラメータ</h4>
+
+    <h3>WALに関して、性能に影響を与えるパラメータ</h3>
     <table>
         <thead>
             <tr>
@@ -3591,14 +3602,16 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         <li>コマンド<m-b>pg_ctl promote</m-b>を用いる方法</li>
         <li>関数<m-b>pg_promote</m-b>を用いる方法</li>
     </ul>
-    <h4>promote_trigger_fileを用いる</h4>
+
+    <h3>promote_trigger_fileを用いる</h3>
     <p>
         <m-b>スタンバイ</m-b>のpostgre.sqlでパラメータpromote_trigger_fileを設定している場合、
         ファイルを生成することで昇格処理がなされる。
         PostgreSQL11以前では、<m-b>スタンバイ</m-b>のrecovery.confでパラメータ<m-b>trigger_file</m-b>を設定することでも同様の操作ができる。
         promote_trigger_fileには任意のファイルパスを指定でき、そのファイルパスにファイルが作成されると昇格処理が行われる。
     </p>
-    <h4>pg_promoteを用いる</h4>
+
+    <h3>pg_promoteを用いる</h3>
     <p>
         <m-b>スーパユーザ</m-b>権限で関数pg_promoteを実行すると、昇格処理がなされる。
         pg_promoteは引数、<m-b>Boolean</m-b>型の<m-b>wait</m-b>と<m-b>Integer</m-b>型の<m-b>wait_seconds</m-b>を
@@ -3606,7 +3619,8 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         これは、完了するのを<m-b>60</m-b>秒待ち、処理が成功すれば<m-b>True</m-b>、失敗すれば<m-b>False</m-b>を返す。
         なお、wait=Falseとする場合、処理の成否にかかわらず<m-b>True</m-b>を返す。
     </p>
-    <h4>タイムラインID</h4>
+
+    <h3>タイムラインID</h3>
     <p>
         昇格したスタンバイは、<m-b>タイムラインID</m-b>が1つ繰り上がる。
         タイムラインIDは、バックアップからのリカバリ時に過去の任意の時点に戻すことができるメリットがあるが、
@@ -3702,7 +3716,8 @@ synchronous_standby_names = <m-b>'sby'</m-b>
             </tr>
         </tbody>
     </table>
-    <h4>コールドスタンバイ</h4>
+
+    <h3>コールドスタンバイ</h3>
     <p>
         最も運用方法がシンプルな構成。
         プライマリとスタンバイが1つの<m-b>データ</m-b>を共有するため、切り替えてもデータの消失が発生することはない。
@@ -3714,7 +3729,8 @@ synchronous_standby_names = <m-b>'sby'</m-b>
         最も大きな制約は、共有ディスクが<m-b>SPOF</m-b>(<m-b>Single Point of Failure</m-b>:<m-b>単一障害点</m-b>)となることである。
         これを回避するためのディスクやファイルシステムに対する信頼性向上施策が考えられるが、コスト/運用面のインパクトが大きくなる。
     </p>
-    <h4>ウォームスタンバイ</h4>
+
+    <h3>ウォームスタンバイ</h3>
     <p>
         ストリーミングレプリケーションの<m-b>同期モード</m-b>と<m-b>非同期モード</m-b>で実現が可能。
         特別な装置やサードパーティアプリケーションがなくとも、PostgreSQL本体(および<m-b>contrib</m-b>モジュール)の機能で実現できることは、
@@ -3722,7 +3738,8 @@ synchronous_standby_names = <m-b>'sby'</m-b>
         非同期で実現する場合、データ損失につながるデメリットもあるが、スタンバイの応答を待たなくてよいメリットも存在する。
         このため、<m-b>災害対策用</m-b>にウォームスタンバイを遠隔地に配置するケースがある。
     </p>
-    <h4>ホットスタンバイ</h4>
+
+    <h3>ホットスタンバイ</h3>
     <p>
         ホットスタンバイは、コールドスタンバイとウォームスタンバイの良いところを兼ね備えている。
         特別な装置は不要で、データ損失のリスクもほとんどない。
@@ -3812,7 +3829,8 @@ synchronous_standby_names = <m-b>'sby'</m-b>
             </tr>
         </tbody>
     </table>
-    <h4>ベースバックアップの取得</h4>
+
+    <h3>ベースバックアップの取得</h3>
     <p>
         スタンバイからコマンド<m-b>pg_basebackup</m-b>を用いてベースバックアップを取得できる。
         ベースバックアップは、コマンド<m-b>pg_start_backup</m-b>や<m-b>pg_stop_backup</m-b>を用いても取得できるが、
@@ -3846,7 +3864,8 @@ synchronous_standby_names = <m-b>'sby'</m-b>
             </tr>
         </tbody>
     </table>
-    <h4>ホットスタンバイの弱点</h4>
+
+    <h3>ホットスタンバイの弱点</h3>
     <p>
         ホットスタンバイの弱点は、<m-b>コンフリクト</m-b>である。
         これは、プライマリとスタンバイの操作が衝突することである。
@@ -4001,7 +4020,8 @@ synchronous_standby_names = <m-b>'sby'</m-b>
         <li><m-b>ロジカルデコーディング</m-b></li>
         <li><m-b>バックグラウンドワーカ</m-b></li>
     </ul>
-    <h4>論理レプリケーションの制限事項</h4>
+
+    <h3>論理レプリケーションの制限事項</h3>
     <p>
         論理レプリケーションの出力プラグインとして、<m-b>pgoutput</m-b>が使用される。
         このモジュールは<m-b>DML</m-b>と<m-b>TRUNCATE</m-b>のみに対応していて、その他の処理は基本的にレプリケーションすることができない。
@@ -4052,7 +4072,8 @@ ALTER TABLE テーブル名 <m-b>REPLICA IDENTITY 設定値</m-b>;
         なお、ストリーミングレプリケーションと同様に、<m-b>パブリッシャ</m-b>側のpostgresql.confのパラメータ<m-b>synchronous_standby_names</m-b>に<m-b>サブスクリプション名</m-b>を指定することで、
         同期モードで論理レプリケーションできる。
     </p>
-    <h4>パブリッシャの設定</h4>
+
+    <h3>パブリッシャの設定</h3>
     <table>
         <thead>
             <tr>
@@ -4094,7 +4115,8 @@ ALTER TABLE テーブル名 <m-b>REPLICA IDENTITY 設定値</m-b>;
             </tr>
         </tbody>
     </table>
-    <h4>サブスクライバの設定</h4>
+
+    <h3>サブスクライバの設定</h3>
     <table>
         <thead>
             <tr>
@@ -5123,86 +5145,6 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
 <m-b>ALTER TABLE 対象テーブル SET (autovacuum_enabled = off)</m-b>;
     </code></pre>
 
-    <h3>自動バキュームの進捗状況確認</h3>
-    <h4>pg_stat_progress_vacuumビューの情報</h4>
-    <table>
-        <thead>
-            <tr>
-                <th>カラム</th>
-                <th>説明</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><m-b>pid</m-b></td>
-                <td>自動バキュームワーカのプロセスID</td>
-            </tr>
-            <tr>
-                <td><m-b>datname</m-b></td>
-                <td>接続するデータベース名</td>
-            </tr>
-            <tr>
-                <td><m-b>relid</m-b></td>
-                <td>バキューム対象のテーブルのOID</td>
-            </tr>
-            <tr>
-                <td><m-b>phase</m-b></td>
-                <td>バキューム処理のフェーズ</td>
-            </tr>
-            <tr>
-                <td><m-b>heap_blks_scanned</m-b></td>
-                <td>スキャンされたヒープブロック数</td>
-            </tr>
-            <tr>
-                <td><m-b>heap_blks_vacuumed</m-b></td>
-                <td>バキューム処理されたヒープブロック数</td>
-            </tr>
-            <tr>
-                <td><m-b>index_vacuum_count</m-b></td>
-                <td>完了したインデックスバキュームサイクル数</td>
-            </tr>
-        </tbody>
-    </table>
-    <h4>自動バキュームの進捗状況のフェーズ</h4>
-    <table>
-        <thead>
-            <tr>
-                <th>フェーズ</th>
-                <th>説明</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><m-b>initializing</m-b></td>
-                <td>自動バキュームの初期化中</td>
-            </tr>
-            <tr>
-                <td><m-b>scanning heap</m-b></td>
-                <td>自動バキュームがテーブルのヒープデータをスキャン中</td>
-            </tr>
-            <tr>
-                <td><m-b>vacuuming indexes</m-b></td>
-                <td>テーブルに付与されたインデックスのバキューム中</td>
-            </tr>
-            <tr>
-                <td><m-b>vacuuming heap</m-b></td>
-                <td>ヒープデータのバキューム中</td>
-            </tr>
-            <tr>
-                <td><m-b>cleaning up indexes</m-b></td>
-                <td>インデックスの整理中</td>
-            </tr>
-            <tr>
-                <td><m-b>truncating heap</m-b></td>
-                <td>データのないヒープページの切り詰め中</td>
-            </tr>
-            <tr>
-                <td><m-b>performing final cleanup</m-b></td>
-                <td>FSMのバキュームとテーブル統計情報の更新中</td>
-            </tr>
-        </tbody>
-    </table>
-
     <h3>VACUUM FULLによるメンテナンス</h3>
     <h4>VACUUMが機能しないケース</h4>
     <p>
@@ -5218,7 +5160,8 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
         LongTransactionの疑いがある。
         この場合、カラム<m-b>pid</m-b>からプロセスを特定し、関数<m-b>pg_cancel_backend()</m-b>や<m-b>pg_terminate_backend()</m-b>などでプロセスを終了する。
     </p>
-    <h4>VACUUM FULL実行時の注意点</h4>
+
+    <h3>VACUUM FULL実行時の注意点</h3>
     <p>
         VACUUMとは異なり、VACUUM FULL実行時はテーブルに対し<m-b>ACCESS EXCLUSIVE</m-b>モードのロックを取得するため、テーブルに対する<m-b>参照/更新</m-b>が待たされる。<br>
         VACUUM FULLは次の順で処理が行われる。
@@ -5233,7 +5176,8 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
         ただし、一時的に対象テーブルと新しいテーブルが同時に作成されるため、容量不足で完遂できなことがある。<br>
         テーブルメンテナンスは、自動バキュームや定期的なバキュームを行っていれば問題になることはないことを心がける。
     </p>
-    <h4>VACUUM FULLの進捗状況確認</h4>
+
+    <h3>VACUUM FULLの進捗状況確認</h3>
     <p>
         PostgreSQL12からVACUUM FULLの進捗状況も確認できるようになった。
         ビュー<m-b>pg_stat_progress_cluster</m-b>で確認できる。
@@ -5394,7 +5338,8 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
             </tr>
         </tbody>
     </table>
-    <h4>統計情報の粒度</h4>
+
+    <h3>テーブル統計情報の粒度</h3>
     <p>
         統計情報の粒度は、システムのデフォルト値としてはパラメータ<m-b>default_statistics_target</m-b>で設定される。
         この数値を増加すると、データ分布の複雑なテーブルでも精度の高い統計情報が取得可能となるが、統計情報の生成と保存コストが増加する。
@@ -5406,23 +5351,25 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
 
     <h2>16章 インデックスメンテナンス</h2>
 
-    <h3>インデックスメンテナンスが必要な状況</h3>
-    <h4>インデックスへのアクセス性能が低下する主な原因</h4>
+    <h3>インデックスへのアクセス性能が低下する主な原因</h3>
     <ul>
         <li>インデックスファイルの<m-b>肥大化</m-b></li>
         <li>インデックスファイルの<m-b>断片化</m-b></li>
         <li>インデックスファイルの<m-b>クラスタ性の欠落</m-b></li>
     </ul>
-    <h4>インデックスファイルの肥大化</h4>
+
+    <h3>インデックスファイルの肥大化</h3>
     <p>
         インデックスの肥大化は、システムカタログ<m-b>pg_class</m-b>のカラム<m-b>relpages</m-b>(ページ数)と<m-b>reltuples</m-b>(行数)の関係から確認することができる。
     </p>
-    <h4>インデックスファイルの断片化</h4>
+
+    <h3>インデックスファイルの断片化</h3>
     <p>
         インデックスの断片化は、contribモジュールの<m-b>pgstattuple</m-b>に含まれる関数<m-b>psstatindex</m-b>で確認することができる。
         インデックス名を引数に渡し、結果のカラム<m-b>leaf_fragmentation</m-b>にリーフページの断片化の状況が出力される。
     </p>
-    <h4>クラスタ性の欠落</h4>
+
+    <h3>クラスタ性の欠落</h3>
     <p>
         クラスタ性とは、テーブルデータの物理的な<m-b>配置順序</m-b>のことを指す。
         テーブルデータの並びは、インデックスの並びに近いとより効果的に検索ができる。
@@ -6797,7 +6744,10 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         パラメータ<m-b>full_page_writes</m-b>をONにすると、チェックポイント後の各ページの更新処理の際に、更新対象のページすべての内容をWALに書き込む。
         一方、OFFにすると、更新分のデータのみがWALに書き込まれれ、応答性能が向上しWALの書き込み量が低減する。
         ただし、クラッシュ時にページのデータが新旧混在する状況となってしまう可能性があり、完全な<m-b>リカバリ</m-b>ができない場合がある。
-        デフォルトでは<m-b>on</m-b>である。
+        デフォルトでは<m-b>ON</m-b>である。<br>
+        また、パラメータ<m-b>wal_compression</m-b>がONの場合、WALに書き出すページを圧縮する。
+        圧縮されたページは、<m-b>WALを再適用</m-b>する際に展開される。
+        デフォルトは<m-b>OFF</m-b>であり、設定を変更できるのは<m-b>スーパユーザ</m-b>である。
     </p>
 
     <h3>ALTER SYSTEM</h3>
@@ -7000,61 +6950,6 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         また、無効化する際はパラメータ<m-b>full_page_writes</m-b>も同時に無効化することを検討する。
     </p>
 
-    <h3>通知</h3>
-    <p>
-        接続するクライアントにPostgreSQLを用いて通知を送りたい場合、コマンド<m-b>LISTEN</m-b>で通知チャンネルを作成し、コマンド<m-b>NOTIFY</m-b>または関数<m-b>pg_notify</m-b>で通知を送る。
-        送る情報には、指定するペイロード、セッションの<m-b>プロセスID</m-b>、<m-b>通知チャンネル名</m-b>などが含まれる。
-    </p>
-
-    <h3>ある時間におけるトランザクションIDの可視性</h3>
-    <p>
-        ある時間におけるトランザクションIDの可視性の情報を扱う型は、<m-b>pg_snapshot</m-b>であり、この情報を<m-b>スナップショット</m-b>という。
-        このテキスト表現は、<m-b>xmin:xmax:xip_list</m-b>である。
-        この型を扱う関数として、次がある。
-    </p>
-    <table>
-        <thead>
-            <tr>
-                <th>関数</th>
-                <th>引数の型</th>
-                <th>返り値の型</th>
-                <th>説明</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><m-b>pg_current_snapshot</m-b></td>
-                <td>なし</td>
-                <td><m-b>pg_snapshot</m-b></td>
-                <td>どのトランザクションIDがin-progressのなのかを表す現在のスナップショットを返す</td>
-            </tr>
-            <tr>
-                <td><m-b>pg_snapshot_xip</m-b></td>
-                <td><m-b>pg_snapshot</m-b></td>
-                <td><m-b>setof xid8</m-b></td>
-                <td>スナップショットに含まれるin-progressのトランザクションIDの集合を返す</td>
-            </tr>
-            <tr>
-                <td><m-b>pg_snapshot_xmax</m-b></td>
-                <td><m-b>pg_snapshot</m-b></td>
-                <td><m-b>xid8</m-b></td>
-                <td>スナップショットのxmaxを返す</td>
-            </tr>
-            <tr>
-                <td><m-b>pg_snapshot_xmin</m-b></td>
-                <td><m-b>pg_snapshot</m-b></td>
-                <td><m-b>xid8</m-b></td>
-                <td>スナップショットのxminを返す</td>
-            </tr>
-            <tr>
-                <td><m-b>pg_visible_in_snapshot</m-b></td>
-                <td><m-b>xid8</m-b><br><m-b>pg_snapshot</m-b></td>
-                <td><m-b>boolean</m-b></td>
-                <td>与えられたトランザクションIDは、指定されたスナップショットにおいて可視か返す</td>
-            </tr>
-        </tbody>
-    </table>
-
     <h3>統計情報コレクタが生成する統計情報</h3>
     <p>
         統計情報コレクタは、収集した情報を他のPostgreSQLプロセスに渡す場合に、<m-b>一時ファイル</m-b>を利用する。
@@ -7167,6 +7062,130 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
             </tr>
         </tbody>
     </table>
+
+    <h3>サーバにシグナルを送信する関数</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>関数</th>
+                <th>戻り値</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>pg_cancel_backend(pid:int)</m-b></td>
+                <td><m-b>boolean</m-b></td>
+                <td>バックエンドプロセスをキャンセルする</td>
+            </tr>
+            <tr>
+                <td><m-b>pg_reload_conf()</m-b></td>
+                <td><m-b>boolean</m-b></td>
+                <td>サーバプロセスに設定ファイルの再読み込みを指示する</td>
+            </tr>
+            <tr>
+                <td><m-b>pg_rotate_logfile()</m-b></td>
+                <td><m-b>boolean</m-b></td>
+                <td>サーバログファイルのローテーションを指示する</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>外部テーブル</h3>
+    <p>
+        PostgreSQL以外のDBMSサーバとデータを連携する際、<m-b>外部テーブル</m-b>を作成し、その実体である<m-b>外部データ</m-b>を使用することができる。
+        これは、<m-b>外部データラッパ</m-b>と呼ばれるライブラリによって実現していて、外部との通信やデータ取得のプロセスを隠ぺいするcontribモジュールとして、
+        いくつかのライブラリを使用することができる。
+        外部データへのアクセスは認証が必要となる場合があるが、これは現在のPostgreSQLのロールに基づいてユーザ名やパスワードなどの認証情報を提供できる、
+        <m-b>ユーザマッピング</m-b>を使用する。<br>
+        外部データラッパを使用する一つの手段として、モジュール<m-b>postgres_fdw</m-b>がある。
+        これは、以前のモジュール<m-b>dblink</m-b>と機能が重複する部分があるが、より標準的な構文が提供され、使用性が向上している。
+    </p>
+
+    <h3>postgres_fdwを用いたリモートアクセスの手順</h3>
+    <ol>
+        <li><m-b>CREATE EXTENSION</m-b>を用いてモジュールをインストールする</li>
+        <li><m-b>CREATE SERVER</m-b>を用いて接続するリモートデータベースを定義する外部サーバオブジェクトを作成する</li>
+        <li><m-b>CREATE USER MAPPING</m-b>を用いて、外部サーバへのアクセスを許可するユーザごとにユーザマッピングを作成する</li>
+        <li><m-b>CREATE FOREIGN TABLE</m-b>を用いて、アクセスするリモートデータベースのテーブルごとに外部テーブルを作成する</li>
+    </ol>
+
+    <h3>サーバのデータファイルにアクセスする</h3>
+    <p>
+        モジュール<m-b>file_fdw</m-b>を用いることで、サーバのファイルシステムにあるデータファイルにアクセスする外部データラッパを使用できる。
+        データファイルはコマンド<m-b>COPY FROM</m-b>で読み込むことのできるフォーマットである必要がある。
+        このラッパで作成された外部テーブルには、次のオプションを指定することができる。
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>オプション</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>filename</m-b></td>
+                <td>読み込むファイルの絶対パス</td>
+            </tr>
+            <tr>
+                <td><m-b>format</m-b></td>
+                <td>
+                    ファイルのフォーマット<br>
+                    COPYコマンドのオプション<m-b>FORMAT</m-b>と同じ。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>header</m-b></td>
+                <td>
+                    ファイルがヘッダ行を持つか<br>
+                    COPYコマンドのオプション<m-b>HEADER</m-b>と同じ。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>delimiter</m-b></td>
+                <td>
+                    ファイルのデリミタ文字<br>
+                    COPYコマンドのオプション<m-b>DELIMITER</m-b>と同じ。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>quote</m-b></td>
+                <td>
+                    ファイルの引用符号文字<br>
+                    COPYコマンドのオプション<m-b>QUOTE</m-b>と同じ。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>escape</m-b></td>
+                <td>
+                    ファイルのエスケープ文字<br>
+                    COPYコマンドのオプション<m-b>ESCAPE</m-b>と同じ。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>null</m-b></td>
+                <td>
+                    ファイルのnull文字列<br>
+                    COPYコマンドのオプション<m-b>NULL</m-b>と同じ。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>encoding</m-b></td>
+                <td>
+                    ファイルのエンコーディング<br>
+                    COPYコマンドのオプション<m-b>ENCODING</m-b>と同じ。
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>ハッシュ操作で利用できるメモリ量</h3>
+    <p>
+        ハッシュ操作で利用できる最大メモリ量を計算したい場合、パラメータ<m-b>hash_mem_multiplier</m-b>を指定する。
+        これの設定値とパラメータ<m-b>work_mem</m-b>の値を掛け合わせた値が、上限値となる。
+        デフォルト値は<m-b>2.0</m-b>である。
+    </p>
 
     <h2>その他調査まとめ</h2>
 
