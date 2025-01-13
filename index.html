@@ -3342,7 +3342,8 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         PostgreSQL9.0で<m-b>非同期レプリケーション</m-b>が導入されて以降、<m-b>同期レプリケーション</m-b>、<m-b>カスケードレプリケーション</m-b>、
         <m-b>remote_writeモードレプリケーション</m-b>が導入されてきた。
     </p>
-    <h4>仕組み</h4>
+
+    <h3>ストリーミングレプリケーションの仕組み</h3>
     <p>
         スタンバイは、プライマリで生成された<m-b>WAL</m-b>を再実行することでレプリケーションを実現する。
         WALは、データベースの性能を担保しつつ、データの<m-b>永続性</m-b>を保証する仕組みである。
@@ -3355,8 +3356,7 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         WALレコードを出力しない<m-b>unlogged</m-b>テーブルでは、ストリーミングレプリケーションによるレプリケーションはできない。
     </p>
 
-    <h3>ストリーミングレプリケーションの設定</h3>
-    <h4>walsenderプロセスで必要な設定</h4>
+    <h3>ストリーミングレプリケーションの設定 (walsender)</h3>
     <table>
         <thead>
             <tr>
@@ -3398,7 +3398,8 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         </tbody>
         </tbody>
     </table>
-    <h4>walreceiverプロセスで必要な設定</h4>
+
+    <h3>ストリーミングレプリケーションの設定 (walreceiver)</h3>
     <table>
         <thead>
             <tr>
@@ -3434,7 +3435,6 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
     </p>
 
     <h3>ストリーミングレプリケーションのプロセス</h3>
-    <h4>walsender/walreceiverプロセスの処理</h4>
     <p>
         walsenderとwalreceiverがWALをやり取りするとき、<m-b>walreceiver</m-b>が主導して処理が行われる。
         このため、パラメータ<m-b>max_wal_senders</m-b>の限り、動的にスタンバイを増設できる。<br>
@@ -3457,7 +3457,8 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         また、スタンバイに対しさらにスタンバイを接続する<m-b>カスケード構成</m-b>も構成可能である。
         これらの共通点は、<m-b>プライマリは1台</m-b>という点である。
     </p>
-    <h4>同期/非同期</h4>
+
+    <h3>レプリケーション構成の同期/非同期</h3>
     <p>
         レプリケーションにおける同期/非同期の違いは、プライマリが<m-b>スタンバイへのWAL適用</m-b>を待機するかどうかである。
         同期/非同期の設定は、<m-b>プライマリ</m-b>のpostgresql.confのパラメータ<m-b>synchronous_commit</m-b>で次表のように設定できる。
@@ -3524,6 +3525,8 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
     <pre><code>
 <m-b>synchronous_standby_names = 'ANY 2 (sby,sby2,sby3)'</m-b>
     </code></pre>
+
+    <h3>synchronous_standby_namesの注意点</h3>
     <p>
         なお、synchronous_standby_namesが空白の場合、<m-b>どのスタンバイも同期として扱わない</m-b>として解釈されるため、注意が必要である。
         スタンバイを一意に特定する文字列は、<m-b>各スタンバイ</m-b>のpostgresql.confでパラメータ<m-b>primary_conninfo</m-b>に
@@ -3546,52 +3549,52 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         </li>
         <li>
             <b><m-b>レプリケーション遅延</m-b>の確認</b><br>
-            プロセスが正常に動作していることを、<m-b>pg_stat_replication</m-b>ビューを見て確認する。
-            pg_stat_replicationビューは次のカラムを持つ。
-            <table>
-                <thead>
-                    <tr>
-                        <th>カラム</th>
-                        <th>説明</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><m-b>application_name</m-b></td>
-                        <td>スタンバイを特定する文字列</td>
-                    </tr>
-                    <tr>
-                        <td><m-b>state</m-b></td>
-                        <td>プライマリの状態</td>
-                    </tr>
-                    <tr>
-                        <td><m-b>sent_lsn</m-b></td>
-                        <td>プライマリが送信したLSN</td>
-                    </tr>
-                    <tr>
-                        <td><m-b>write_lsn</m-b></td>
-                        <td>バッファへの書き込みが完了したLSN</td>
-                    </tr>
-                    <tr>
-                        <td><m-b>flush_lsn</m-b></td>
-                        <td>同期書き込みが完了したLSN</td>
-                    </tr>
-                    <tr>
-                        <td><m-b>replay_lsn</m-b></td>
-                        <td>WALの適用が完了したLSN</td>
-                    </tr>
-                    <tr>
-                        <td><m-b>sync_state</m-b></td>
-                        <td>スタンバイの同期状態</td>
-                    </tr>
-                </tbody>
-            </table>
-            <br>
+            プロセスが正常に動作していることを、<m-b>pg_stat_replication</m-b>ビューを見て確認する。<br>
             なお、LSNを比較する場合は、差分を出力する関数<m-b>pg_wal_lsn_diff</m-b>を用いるとよい。<br>
             pg_stat_replicationビューは、プライマリから接続するスタンバイの情報を各行に出力するが、<m-b>カスケード接続</m-b>には対応していない。
             その場合、walreceiverが存在する各サーバで確認する必要がある。
         </li>
     </ul>
+
+    <h3>pg_stat_replicationビューの主なカラム</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>カラム</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>application_name</m-b></td>
+                <td>スタンバイを特定する文字列</td>
+            </tr>
+            <tr>
+                <td><m-b>state</m-b></td>
+                <td>プライマリの状態</td>
+            </tr>
+            <tr>
+                <td><m-b>sent_lsn</m-b></td>
+                <td>プライマリが送信したLSN</td>
+            </tr>
+            <tr>
+                <td><m-b>write_lsn</m-b></td>
+                <td>バッファへの書き込みが完了したLSN</td>
+            </tr>
+            <tr>
+                <td><m-b>flush_lsn</m-b></td>
+                <td>同期書き込みが完了したLSN</td>
+            </tr>
+            <tr>
+                <td><m-b>replay_lsn</m-b></td>
+                <td>WALの適用が完了したLSN</td>
+            </tr>
+            <tr>
+                <td><m-b>sync_state</m-b></td>
+                <td>スタンバイの同期状態</td>
+            </tr>
+        </tbody>
+    </table>
 
     <h3>レプリケーションの管理</h3>
     <p>
@@ -3881,22 +3884,23 @@ synchronous_standby_names = <m-b>'sby'</m-b>
         PostgreSQLには自動でフェイルオーバーを行う仕組みがないため、<m-b>Pacemaker</m-b>などのHAクラスタソフトウェアを組み合わせた運用が行われる。
         プライマリとスタンバイでフェイルオーバーの手順が異なる。
     </p>
-    <h4>プライマリのフェイルオーバー</h4>
+
+    <h3>プライマリのフェイルオーバー</h3>
     <p>
         プライマリをフェイルオーバーする場合、コマンド<m-b>pg_ctl promote</m-b>などを用いてスタンバイを昇格する必要がある。
         なお、プライマリからクライアントにコミットが返却されない場合でも、スタンバイのWALは更新されていて、
         この状態でスタンバイを昇格するとスタンバイのWAL適用と共にコミット済みとなる可能性がある。
         これを防ぐ仕組みはPostgreSQLに用意されていないため、この場合はデータベース管理者の介入やアプリケーション側の対応が必要となる。
     </p>
-    <h4>スタンバイのフェイルオーバー</h4>
+
+    <h3>スタンバイのフェイルオーバー</h3>
     <p>
         スタンバイをフェイルオーバーする場合、<m-b>プライマリ</m-b>のpostgresql.confでパラメータ<m-b>synchronous_standby_names</m-b>をメンテナンスする必要がある。
         <m-b>synchronous_standby_names</m-b>を複数指定していて同期レプリケーションのスタンバイの数に余裕がある場合、自動で他のスタンバイを同期スタンバイとみなして動作するが、
         不足する場合は<m-b>synchronous_standby_names</m-b>を空にして設定ファイルの再読み込み(<m-b>pg_ctl reload</m-b>など)を行う必要がある。
     </p>
 
-    <h3>プライマリ/スタンバイの監視</h3>
-    <h4>walsender/walreceiverプロセスの動作確認とタイムアウト</h4>
+    <h3>プライマリ/スタンバイの監視 - walsender/walreceiverプロセスの動作確認とタイムアウト</h3>
     <p>
         walsender/walreceiverプロセスの動作確認は、プロセス自身の存在確認だけでなく、ネットワーク異常による待ちが発生していないかも確認する必要がある。
         待ち状態を確認するには、パラメータ<m-b>wal_sender_timeout</m-b>と<m-b>wal_receiver_timeout</m-b>を設定し、
@@ -3904,7 +3908,8 @@ synchronous_standby_names = <m-b>'sby'</m-b>
         これにより、プロセスがタイムアウトした場合に<m-b>ログ</m-b>が出力され、<m-b>wal_sender</m-b>プロセスは停止する。
         また、<m-b>wal_receiver</m-b>プロセスは停止後に再起動し、レプリケーションの継続を試みる。
     </p>
-    <h4>レプリケーションの状況確認</h4>
+
+    <h3>プライマリ/スタンバイの監視 - レプリケーションの状況確認</h3>
     <p>
         レプリケーションの状況を確認するには、walreceiverプロセスにおけるWAL受信位置(<m-b>receive位置</m-b>)とWAL適用位置(<m-b>replay位置</m-b>)を確認すればよい。
         位置確認には<m-b>pg_stat_replication</m-b>ビューを用いる方法があるが、次の点に注意する。
@@ -3933,7 +3938,7 @@ synchronous_standby_names = <m-b>'sby'</m-b>
         また、<m-b>スーパユーザ</m-b>権限と<m-b>replication</m-b>権限が必要となる。
     </p>
 
-    <h3>コンフリクトの緩和策</h3>
+    <h3>コンフリクトの緩和策 - WAL</h3>
     <p>
         コンフリクトが発生すると、デフォルトで<m-b>30秒</m-b>の間スタンバイのWAL適用が待機されるが、この時間が致命的なシステムにおいてはパラメータを調整する必要がある。
         WAL適用の待機時間を設定するパラメータは、次のものがある。
@@ -3961,8 +3966,10 @@ synchronous_standby_names = <m-b>'sby'</m-b>
             </tr>
         </tbody>
     </table>
+
+    <h3>コンフリクトの緩和策 - VACUUM/HOT</h3>
     <p>
-        また、VACUUMやHOTによる行データ削除と参照処理がコンフリクトする場合、次のパラメータを調整する。
+        VACUUMやHOTによる行データ削除と参照処理がコンフリクトする場合、次のパラメータを調整する。
     </p>
     <table>
         <thead>
@@ -3998,8 +4005,10 @@ synchronous_standby_names = <m-b>'sby'</m-b>
             </tr>
         </tbody>
     </table>
+
+    <h3>WAL領域の調整</h3>
     <p>
-        これらのパラメータを設定した場合、WAL領域の使用率が上昇する。
+        コンフリクトの緩和に関するパラメータを設定した場合、WAL領域の使用率が上昇する。
         WAL領域の使用率を調整する場合、パラメータ<m-b>wal_keep_size</m-b>(デフォルト値:<m-b>0</m-b>)を指定する。
         このパラメータはスタンバイが必要とする可能性のあるWALファイルを保持するため、保持する容量を<m-b>MB</m-b>単位で指定する。
         多くの場合、max_wal_sizeが適切に設定されていれば問題にはならないが、細かい調整が必要な場合にはチューニングポイントとなる。<br>
@@ -4032,9 +4041,8 @@ synchronous_standby_names = <m-b>'sby'</m-b>
     <pre><code>
 ALTER TABLE テーブル名 <m-b>REPLICA IDENTITY 設定値</m-b>;
     </code></pre>
-    <p>
-        設定値としては、次表に示すキーワードを指定できる。
-    </p>
+
+    <h3>論理レプリケーションの制限に指定可能なキーワード</h3>
     <table>
         <thead>
             <tr>
@@ -4556,8 +4564,9 @@ touch <m-b>${PGDATA}/recovery.signal</m-b>
     <pre><code>
 ps <m-b>faxww</m-b> | <m-b>grep postgres</m-b>
     </code></pre>
-    <h4>コマンドpg_isreadyを用いる方法</h4>
-    <h5>コマンドの戻り値</h5>
+
+    <h3>コマンドpg_isreadyを用いる死活監視</h3>
+    <h4>コマンドの戻り値</h4>
     <table>
         <thead>
             <tr>
@@ -4584,7 +4593,8 @@ ps <m-b>faxww</m-b> | <m-b>grep postgres</m-b>
             </tr>
         </tbody>
     </table>
-    <h5>リモートでコマンドを実行する場合</h5>
+
+    <h3>リモートでコマンドpg_isreadyを実行する場合</h3>
     <pre><code>
 pg_isready <m-b>-h ホスト名 -p 5432 -d データベース名</m-b>
     </code></pre>
@@ -4908,7 +4918,8 @@ pg_isready <m-b>-h ホスト名 -p 5432 -d データベース名</m-b>
         <li><m-b>不要領域の再利用</m-b></li>
         <li><m-b>トランザクションIDの周回問題の回避</m-b></li>
     </ul>
-    <h4>VACUUMの処理手順</h4>
+
+    <h3>VACUUMの処理手順</h3>
     <ol>
         <li>各テーブルの<m-b>ページ</m-b>を先頭から走査する</li>
         <li><m-b>VM</m-b>(<m-b>Visibility Map</m-b>)を確認して不要行を含むなら3.の処理に、なければ次のページを走査する</li>
@@ -4993,8 +5004,10 @@ pg_isready <m-b>-h ホスト名 -p 5432 -d データベース名</m-b>
             VACUUM関連のパラメータ<m-b>autovacuum_freeze_min_age</m-b>、<m-b>autovacuum_freeze_max_age</m-b>、<m-b>autovacuum_freeze_table_age</m-b>で制御する
         </li>
     </ul>
+
+    <h3>VACUUMとFREEZEの調整</h3>
     <p>
-        なお、現在のXIDより<m-b>5000万</m-b>以上古いXIDは、<m-b>VACUUM</m-b>時に回収されるため、基本的には意識しなくてもよい。
+        現在のXIDより<m-b>5000万</m-b>以上古いXIDは、<m-b>VACUUM</m-b>時に回収されるため、基本的には意識しなくてもよい。
         ただ、更新をほとんど行わないテーブルであれば、登録後にVACUUM FREEZEを行うことで運用中に発生するFREEZE処理の負荷を回避できる。<br>
         通常のVACUUMはトランザクション処理の妨げとならないよう間欠的に実行されるが、XIDが上限に近づくとFREEZE処理を優先する。
         上限にどの程度近づくと動作が切り替わるのかは、次のパラメータで制御する。
@@ -5020,10 +5033,14 @@ pg_isready <m-b>-h ホスト名 -p 5432 -d データベース名</m-b>
             </tr>
         </tbody>
     </table>
+
+    <h3>トランザクションID周回問題の警告の閾値</h3>
     <p>
         周回問題に到達するまでに利用可能な残りのXIDが一定の数を下回ると、<m-b>警告メッセージ</m-b>を出力する。
         この閾値は、PostgreSQL13までは<m-b>1100万</m-b>、PostgreSQL14では<m-b>4000万</m-b>である。
     </p>
+
+    <h3>XIDに関するSQL</h3>
     <h4>現在のトランザクションのXIDを確認するSQL</h4>
     <pre><code>
 SELECT <m-b>txid_current()</m-b>;
@@ -5033,8 +5050,7 @@ SELECT <m-b>txid_current()</m-b>;
 SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
     </code></pre>
 
-    <h3>自動バキュームによるメンテナンス</h3>
-    <h4>自動バキュームの設定に関する主なパラメータ</h4>
+    <h3>自動バキュームの設定に関する主なパラメータ</h3>
     <table>
         <thead>
             <tr>
@@ -5128,7 +5144,8 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
             </tr>
         </tbody>
     </table>
-    <h4>自動バキュームが開始する条件</h4>
+
+    <h3>自動バキュームが開始する条件</h3>
     <ul>
         <li>
             autovacuum_naptimeで指定した時間ごとに、更新/削除された件数が
@@ -5141,7 +5158,8 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
             を超過した場合
         </li>
     </ul>
-    <h4>テーブルごとに自動バキュームを停止するSQL</h4>
+
+    <h3>テーブルごとに自動バキュームを停止するSQL</h3>
     <pre><code>
 <m-b>ALTER TABLE 対象テーブル SET (autovacuum_enabled = off)</m-b>;
     </code></pre>
@@ -5277,7 +5295,8 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
     <p>
         <m-b>プランナ</m-b>がより良い実行計画を作成するには、テーブルの更新に合わせて<m-b>統計情報</m-b>も更新する必要がある。
     </p>
-    <h4>テーブル統計情報に関する主な設定</h4>
+
+    <h3>テーブル統計情報に関する主な設定</h3>
     <table>
         <thead>
             <tr>
@@ -5304,7 +5323,8 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
             </tr>
         </tbody>
     </table>
-    <h4>pg_stat_progress_analyzeビューの情報</h4>
+
+    <h3>pg_stat_progress_analyzeビューの主なカラム</h3>
     <table>
         <thead>
             <tr>
