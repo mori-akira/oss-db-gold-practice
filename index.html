@@ -5386,7 +5386,7 @@ SELECT relname, <m-b>age(relfrozenxid)</m-b> FROM pg_class WHERE relkind = 'r';
 
     <h3>インデックスファイルの断片化</h3>
     <p>
-        インデックスの断片化は、contribモジュールの<m-b>pgstattuple</m-b>に含まれる関数<m-b>psstatindex</m-b>で確認することができる。
+        インデックスの断片化は、contribモジュールの<m-b>pgstattuple</m-b>に含まれる関数<m-b>pgstatindex</m-b>で確認することができる。
         インデックス名を引数に渡し、結果のカラム<m-b>leaf_fragmentation</m-b>にリーフページの断片化の状況が出力される。
     </p>
 
@@ -6531,7 +6531,7 @@ ALTER FUNCTION 関数名 <m-b>ROWS 返却する行数</m-b>;
         実行計画の作成にもコストは発生する。
         複雑な問い合わせを大量に繰り返す場合、実行計画の作成コストも無視できないものとなる。
         この場合、<m-b>プリペアド文</m-b>を使用することで、実行計画を再利用することができる。
-        なお、実行計画上、実行計画の作成にかかる時間は<m-b>Plannning Time</m-b>の項目に出力される。<br>
+        なお、実行計画上、実行計画の作成にかかる時間は<m-b>Planning Time</m-b>の項目に出力される。<br>
         ただし、プリペアド文を使用すると、最適な実行計画が異なる場合も元々作られた実行計画が再利用されてしまう場合がある。
         これを制御するために、PostgreSQL12でパラメータ<m-b>plan_cache_mode</m-b>が導入された。
         値として次表のキーワードを指定することができる。
