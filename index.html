@@ -6569,6 +6569,117 @@ ALTER FUNCTION 関数名 <m-b>ROWS 返却する行数</m-b>;
 
     <h2>試験対策</h2>
 
+    <h3>関数の変動性分類</h3>
+    <p>
+        すべての関数は変動性区分を持ち、CREATE FUNCTIONコマンドで指定することができる。
+        変動性に関する分類は、オプティマイザによる処理の最適化に影響する。<br>
+        変動性の区分は次のものがある。
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>区分</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>VOLATILE</m-b></td>
+                <td>
+                    データベースの変更を含む、すべてを行うことができる。
+                    また、同一引数で呼び出したとしても異なる結果を返すことがある。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>STABLE</m-b></td>
+                <td>
+                    データベースを変更することができない。
+                    また、単一の文内ですべての行に対して同一の引数を渡した場合に同一の結果を返すことが保証される。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>IMMUTABLE</m-b></td>
+                <td>
+                    データベースを変更することができない。
+                    また、同一引数に対する呼び出しは常に同一の結果となる。
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>テーブルサイズの取得</h3>
+    <p>
+        テーブルサイズ(テーブルで使用されるディスク領域)を取得するシステム管理関数は、<m-b>pg_relation_size</m-b>である。
+        テーブル名またはテーブルの<m-b>oid</m-b>を引数に渡す。<br>
+        ビューを引数に指定した場合、結果は<m-b>0</m-b>となる。
+    </p>
+
+    <h3>LSNとWALファイル名</h3>
+    <p>
+        次にWALファイルを書き出すLSNは、関数<m-b>pg_current_wal_insert_lsn</m-b>で取得できる。
+        また、具体的なWALファイル名は、関数<m-b>pg_walfile_name</m-b>で取得できる。
+        この関数は、引数にLSNの文字列を渡すため、組み合わせて使用する。
+    </p>
+
+    <h3>PostgreSQLのソートについて</h3>
+    <p>
+        PostgreSQLでは、メモリ上で実行できる場合は<m-b>クイックソート</m-b>を行い、できない場合はソート結果を外部に出力する<m-b>外部ソート</m-b>を使用する。
+        後者は、問い合わせが遅くなる要因の一つであり、<m-b>作業メモリ</m-b>のサイズが小さい場合に起こる現象である。
+        問い合わせを実行してみるまで、どちらでソートされるかは分からない。
+    </p>
+
+    <h3>ログ出力に使える代表的なエスケープシーケンス</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>エスケープシーケンス</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>%a</m-b></td>
+                <td>アプリケーション名</td>
+            </tr>
+            <tr>
+                <td><m-b>%u</m-b></td>
+                <td>ユーザ名</td>
+            </tr>
+            <tr>
+                <td><m-b>%d</m-b></td>
+                <td>データベース名</td>
+            </tr>
+            <tr>
+                <td><m-b>%p</m-b></td>
+                <td>プロセス識別子</td>
+            </tr>
+            <tr>
+                <td><m-b>%t</m-b></td>
+                <td>ミリ秒なしのタイムスタンプ</td>
+            </tr>
+            <tr>
+                <td><m-b>%m</m-b></td>
+                <td>ミリ秒付きタイムスタンプ</td>
+            </tr>
+            <tr>
+                <td><m-b>%e</m-b></td>
+                <td>SQLSTATE エラーコード</td>
+            </tr>
+            <tr>
+                <td><m-b>%s</m-b></td>
+                <td>プロセスの開始タイムスタンプ</td>
+            </tr>
+            <tr>
+                <td><m-b>%x</m-b></td>
+                <td>トランザクションID(未割り当ては<m-b>0</m-b>)</td>
+            </tr>
+            <tr>
+                <td><m-b>%l</m-b></td>
+                <td>各セッションまたおは各プロセスのログ行番号</td>
+            </tr>
+        </tbody>
+    </table>
+
     <h3>関数digest()</h3>
     <p>
         第1引数data(<m-b>test</m-b>型/<m-b>bytea</m-b>型)の<m-b>バイナリハッシュ</m-b>を計算する関数。
@@ -6603,156 +6714,12 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         第1引数にハッシュ化アルゴリズムを指定し、<m-b>des</m-b>、<m-b>xdes</m-b>、<m-b>md5</m-b>、<m-b>bf</m-b>を指定することができる。
     </p>
 
-    <h3>EXPLAINの対象となるSQLコマンド</h3>
-    <ul>
-        <li><m-b>SELECT</m-b></li>
-        <li><m-b>INSERT</m-b></li>
-        <li><m-b>UPDATE</m-b></li>
-        <li><m-b>DELETE</m-b></li>
-        <li><m-b>VALUES</m-b></li>
-        <li><m-b>EXECUTE</m-b></li>
-        <li><m-b>DECLARE</m-b></li>
-        <li><m-b>CREATE TABLE AS</m-b></li>
-        <li><m-b>CREATE MATERIALIZED VIEW</m-b></li>
-        <li><m-b>REFRESH MATERIALIZED VIEW</m-b></li>
-    </ul>
-
-    <h3>ビューpg_locksのカラムlocktypeの種類</h3>
-    <ul>
-        <li><m-b>relation</m-b></li>
-        <li><m-b>extend</m-b></li>
-        <li><m-b>page</m-b></li>
-        <li><m-b>tuple</m-b></li>
-        <li><m-b>transactionid</m-b></li>
-        <li><m-b>virtualxid</m-b></li>
-        <li><m-b>object</m-b></li>
-        <li><m-b>userlock</m-b></li>
-        <li><m-b>advisory</m-b></li>
-    </ul>
-
-    <h3>oid2name</h3>
-    <p>
-        OIDとPostgreSQLデータディレクトリ内の<m-b>ファイルノード</m-b>を解決するコマンド。
-        PostgreSQLのファイル構造を確認するためのユーティリティプログラムである。
-        対象のデータベースに接続し、<m-b>OID</m-b>、<m-b>ファイルノード</m-b>、<m-b>テーブル名</m-b>を抽出する。
-    </p>
-    <h4>主なオプション</h4>
-    <table>
-        <thead>
-            <tr>
-                <th>オプション</th>
-                <th>説明</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><m-b>-f</m-b></td>
-                <td>表示するファイルノードを指定する</td>
-            </tr>
-            <tr>
-                <td><m-b>-i</m-b></td>
-                <td>インデックスおよびシーケンスに関する情報も表示する</td>
-            </tr>
-            <tr>
-                <td><m-b>-o</m-b></td>
-                <td>表示するOIDを指定する</td>
-            </tr>
-            <tr>
-                <td><m-b>-t</m-b></td>
-                <td>表示するテーブル名のパターンを指定する</td>
-            </tr>
-            <tr>
-                <td><m-b>-x</m-b></td>
-                <td>表示する情報を追加する(テーブル空間名、スキーマ名、OID)</td>
-            </tr>
-            <tr>
-                <td><m-b>-d</m-b></td>
-                <td>接続するデータベース</td>
-            </tr>
-            <tr>
-                <td><m-b>-H</m-b></td>
-                <td>接続するホスト</td>
-            </tr>
-            <tr>
-                <td><m-b>-p</m-b></td>
-                <td>接続するポート番号</td>
-            </tr>
-            <tr>
-                <td><m-b>-U</m-b></td>
-                <td>接続に使用するユーザ名</td>
-            </tr>
-            <tr>
-                <td><m-b>-P</m-b></td>
-                <td>接続に使用するパスワード</td>
-            </tr>
-        </tbody>
-    </table>
-
     <h3>アクセス統計情報</h3>
     <p>
         ANALYZEコマンド等を利用して取得する統計情報とは異なり、<m-b>stats collector</m-b>プロセスが<m-b>500ms</m-b>毎に収集する情報である。(デフォルト設定)
         これは、<m-b>pg_stat_database</m-b>や<m-b>pg_stat_all_tables</m-b>などの、統計情報ビューによって参照でき、
         <m-b>システム全体の稼働状況の調査</m-b>や<m-b>問題点の発見</m-b>等を目的に使用する。
     </p>
-
-    <h3>pg_stat_bgwriterビュー</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>カラム</th>
-                <th>説明</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><m-b>checkpoints_timed</m-b></td>
-                <td>これまでに実行された、スケジュールされたチェックポイントの数</td>
-            </tr>
-            <tr>
-                <td><m-b>checkpoints_req</m-b></td>
-                <td>これまでに実行された、要求されたチェックポイント数</td>
-            </tr>
-            <tr>
-                <td><m-b>checkpoint_write_time</m-b></td>
-                <td>チェックポイント処理において、ディスクへの書き出しに費やされた総時間(ミリ秒)</td>
-            </tr>
-            <tr>
-                <td><m-b>checkpoint_sync_time</m-b></td>
-                <td>チェックポイント処理において、ディスクへの同期に費やされた総時間(ミリ秒)</td>
-            </tr>
-            <tr>
-                <td><m-b>bufferes_checkpoint</m-b></td>
-                <td>チェックポイントで書き出されたバッファ数</td>
-            </tr>
-            <tr>
-                <td><m-b>bufferes_clean</m-b></td>
-                <td>バックグラウンドライタにより書き出されたバッファ数</td>
-            </tr>
-            <tr>
-                <td><m-b>maxwritten_clean</m-b></td>
-                <td>バックグラウンドライタが書き出すバッファ数が多すぎるために、整理用スキャンを停止した回数</td>
-            </tr>
-            <tr>
-                <td><m-b>buffers_backend</m-b></td>
-                <td>バックエンドにより直接書き出されたバッファ数</td>
-            </tr>
-            <tr>
-                <td><m-b>buffers_backend_fsync</m-b></td>
-                <td>
-                    バックエンドが独自にfsync呼び出しを実行した回数<br>
-                    通常はバックエンドが独自に書き込みを行った場合も、バックグラウンドライタが吸収する。
-                </td>
-            </tr>
-            <tr>
-                <td><m-b>buffers_alloc</m-b></td>
-                <td>割り当てられたバッファ数</td>
-            </tr>
-            <tr>
-                <td><m-b>stats_reset</m-b></td>
-                <td>この統計情報がリセットされた最終日時</td>
-            </tr>
-        </tbody>
-    </table>
 
     <h3>インデックススキャンとシーケンシャルスキャンの設定</h3>
     <p>
@@ -6780,62 +6747,6 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         ALTER SYSTEMで設定された値は、<m-b>SIGHUP</m-b>シグナルを送った場合、またはコマンド<m-b>pg_ctl reload</m-b>を使用した場合に有効となる。
         このコマンドを実行できるのは<m-b>スーパユーザ</m-b>のみである。
     </p>
-
-    <h3>vacuumdb</h3>
-    <p>
-        VACUUMコマンドをラップし、データベースの不要領域の回収を行うユーティリティコマンドである。
-    </p>
-    <h4>vacuumdbのオプション</h4>
-    <table>
-        <thead>
-            <tr>
-                <th>オプション</th>
-                <th>説明</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><m-b>-a</m-b><br><m-b>--all</m-b></td>
-                <td>すべてのデータベースに対してバキュームを行う</td>
-            </tr>
-            <tr>
-                <td><m-b>-d データベース名</m-b><br><m-b>--dbname=データベース名</m-b></td>
-                <td>
-                    バキューム対象のデータベースを指定する<br>
-                    このオプション及び<m-b>--all</m-b>が指定されない場合、環境変数<m-b>PGDATABASE</m-b>から接続先のデータベースを読み取る。
-                    上記の環境変数も指定されていない場合、<m-b>接続に用いるユーザ名</m-b>からデータベースへの接続を試みる。
-                </td>
-            </tr>
-            <tr>
-                <td><m-b>-e</m-b><br><m-b>--echo</m-b></td>
-                <td>実行するコマンドを表示する</td>
-            </tr>
-            <tr>
-                <td><m-b>-f</m-b><br><m-b>--full</m-b></td>
-                <td>VACUUM FULLを行う</td>
-            </tr>
-            <tr>
-                <td><m-b>-F</m-b><br><m-b>--freeze</m-b></td>
-                <td>FREEZE処理を行う</td>
-            </tr>
-            <tr>
-                <td><m-b>-q</m-b><br><m-b>--quiet</m-b></td>
-                <td>進行メッセージを表示しない</td>
-            </tr>
-            <tr>
-                <td><m-b>-t テーブル名</m-b><br><m-b>--table=テーブル名</m-b></td>
-                <td>tableのみに対しVACUUMを行う</td>
-            </tr>
-            <tr>
-                <td><m-b>-z</m-b><br><m-b>--analyze</m-b></td>
-                <td>テーブルの統計情報も更新する</td>
-            </tr>
-            <tr>
-                <td><m-b>-Z</m-b><br><m-b>--analyze-only</m-b></td>
-                <td>テーブルの統計情報の更新のみを行う</td>
-            </tr>
-        </tbody>
-    </table>
 
     <h3>接続に関する環境変数</h3>
     <table>
@@ -7120,7 +7031,6 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         外部データへのアクセスは認証が必要となる場合があるが、これは現在のPostgreSQLのロールに基づいてユーザ名やパスワードなどの認証情報を提供できる、
         <m-b>ユーザマッピング</m-b>を使用する。<br>
         外部データラッパを使用する一つの手段として、モジュール<m-b>postgres_fdw</m-b>がある。
-        これは、以前のモジュール<m-b>dblink</m-b>と機能が重複する部分があるが、より標準的な構文が提供され、使用性が向上している。
     </p>
 
     <h3>postgres_fdwを用いたリモートアクセスの手順</h3>
@@ -7130,217 +7040,6 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         <li><m-b>CREATE USER MAPPING</m-b>を用いて、外部サーバへのアクセスを許可するユーザごとにユーザマッピングを作成する</li>
         <li><m-b>CREATE FOREIGN TABLE</m-b>を用いて、アクセスするリモートデータベースのテーブルごとに外部テーブルを作成する</li>
     </ol>
-
-    <h3>サーバのデータファイルにアクセスする</h3>
-    <p>
-        モジュール<m-b>file_fdw</m-b>を用いることで、サーバのファイルシステムにあるデータファイルにアクセスする外部データラッパを使用できる。
-        データファイルはコマンド<m-b>COPY FROM</m-b>で読み込むことのできるフォーマットである必要がある。
-        このラッパで作成された外部テーブルには、次のオプションを指定することができる。
-    </p>
-    <table>
-        <thead>
-            <tr>
-                <th>オプション</th>
-                <th>説明</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><m-b>filename</m-b></td>
-                <td>読み込むファイルの絶対パス</td>
-            </tr>
-            <tr>
-                <td><m-b>format</m-b></td>
-                <td>
-                    ファイルのフォーマット<br>
-                    COPYコマンドのオプション<m-b>FORMAT</m-b>と同じ。
-                </td>
-            </tr>
-            <tr>
-                <td><m-b>header</m-b></td>
-                <td>
-                    ファイルがヘッダ行を持つか<br>
-                    COPYコマンドのオプション<m-b>HEADER</m-b>と同じ。
-                </td>
-            </tr>
-            <tr>
-                <td><m-b>delimiter</m-b></td>
-                <td>
-                    ファイルのデリミタ文字<br>
-                    COPYコマンドのオプション<m-b>DELIMITER</m-b>と同じ。
-                </td>
-            </tr>
-            <tr>
-                <td><m-b>quote</m-b></td>
-                <td>
-                    ファイルの引用符号文字<br>
-                    COPYコマンドのオプション<m-b>QUOTE</m-b>と同じ。
-                </td>
-            </tr>
-            <tr>
-                <td><m-b>escape</m-b></td>
-                <td>
-                    ファイルのエスケープ文字<br>
-                    COPYコマンドのオプション<m-b>ESCAPE</m-b>と同じ。
-                </td>
-            </tr>
-            <tr>
-                <td><m-b>null</m-b></td>
-                <td>
-                    ファイルのnull文字列<br>
-                    COPYコマンドのオプション<m-b>NULL</m-b>と同じ。
-                </td>
-            </tr>
-            <tr>
-                <td><m-b>encoding</m-b></td>
-                <td>
-                    ファイルのエンコーディング<br>
-                    COPYコマンドのオプション<m-b>ENCODING</m-b>と同じ。
-                </td>
-            </tr>
-        </tbody>
-    </table>
-
-    <h3>ハッシュ操作で利用できるメモリ量</h3>
-    <p>
-        ハッシュ操作で利用できる最大メモリ量を計算したい場合、パラメータ<m-b>hash_mem_multiplier</m-b>を指定する。
-        これの設定値とパラメータ<m-b>work_mem</m-b>の値を掛け合わせた値が、上限値となる。
-        デフォルト値は<m-b>2.0</m-b>である。
-    </p>
-
-    <h2>その他調査まとめ</h2>
-
-    <h3>関数の変動性分類</h3>
-    <p>
-        すべての関数は変動性区分を持ち、CREATE FUNCTIONコマンドで指定することができる。
-        変動性に関する分類は、オプティマイザによる処理の最適化に影響する。<br>
-        変動性の区分は次のものがある。
-    </p>
-    <table>
-        <thead>
-            <tr>
-                <th>区分</th>
-                <th>説明</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><m-b>VOLATILE</m-b></td>
-                <td>
-                    データベースの変更を含む、すべてを行うことができる。
-                    また、同一引数で呼び出したとしても異なる結果を返すことがある。
-                </td>
-            </tr>
-            <tr>
-                <td><m-b>STABLE</m-b></td>
-                <td>
-                    データベースを変更することができない。
-                    また、単一の文内ですべての行に対して同一の引数を渡した場合に同一の結果を返すことが保証される。
-                </td>
-            </tr>
-            <tr>
-                <td><m-b>IMMUTABLE</m-b></td>
-                <td>
-                    データベースを変更することができない。
-                    また、同一引数に対する呼び出しは常に同一の結果となる。
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    <blockquote>
-        <a href="https://www.postgresql.jp/docs/9.2/xfunc-volatility.html" target="_blank">
-            35.6. 関数の変動性分類
-        </a>
-    </blockquote>
-
-    <h3>テーブルサイズの取得</h3>
-    <p>
-        テーブルサイズ(テーブルで使用されるディスク領域)を取得するシステム管理関数は、<m-b>pg_relation_size</m-b>である。
-        テーブル名またはテーブルの<m-b>oid</m-b>を引数に渡す。<br>
-        ビューを引数に指定した場合、結果は<m-b>0</m-b>となる。
-    </p>
-
-    <h3>contribモジュール</h3>
-    <p>
-        限られたユーザ向けであったり、実験的すぎたりして、PostgreSQL本体に取り込まれていないモジュールのこと。
-        contribモジュールは<m-b>contrib</m-b>ディレクトリに格納されている。
-    </p>
-    <blockquote>
-        <a href="https://www.postgresql.jp/document/15/html/contrib.html" target="_blank">
-            付録F 追加で提供されるモジュール
-        </a>
-    </blockquote>
-
-    <h3>LSNとWALファイル名</h3>
-    <p>
-        次にWALファイルを書き出すLSNは、関数<m-b>pg_current_wal_insert_lsn</m-b>で取得できる。
-        また、具体的なWALファイル名は、関数<m-b>pg_walfile_name</m-b>で取得できる。
-        この関数は、引数にLSNの文字列を渡すため、組み合わせて使用する。
-    </p>
-    <blockquote>
-        <a href="https://www.postgresql.jp/document/10/html/functions-admin.html" target="_blank">
-            9.26. システム管理関数
-        </a>
-    </blockquote>
-
-    <h3>PostgreSQLのソートについて</h3>
-    <p>
-        PostgreSQLでは、メモリ上で実行できる場合は<m-b>クイックソート</m-b>を行い、できない場合はソート結果を外部に出力する<m-b>外部ソート</m-b>を使用する。
-        後者は、問い合わせが遅くなる要因の一つであり、<m-b>作業メモリ</m-b>のサイズが小さい場合に起こる現象である。
-        問い合わせを実行してみるまで、どちらでソートされるかは分からない。
-    </p>
-
-    <h3>ログ出力に使える代表的なエスケープシーケンス</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>エスケープシーケンス</th>
-                <th>説明</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><m-b>%a</m-b></td>
-                <td>アプリケーション名</td>
-            </tr>
-            <tr>
-                <td><m-b>%u</m-b></td>
-                <td>ユーザ名</td>
-            </tr>
-            <tr>
-                <td><m-b>%d</m-b></td>
-                <td>データベース名</td>
-            </tr>
-            <tr>
-                <td><m-b>%p</m-b></td>
-                <td>プロセス識別子</td>
-            </tr>
-            <tr>
-                <td><m-b>%t</m-b></td>
-                <td>ミリ秒なしのタイムスタンプ</td>
-            </tr>
-            <tr>
-                <td><m-b>%m</m-b></td>
-                <td>ミリ秒付きタイムスタンプ</td>
-            </tr>
-            <tr>
-                <td><m-b>%e</m-b></td>
-                <td>SQLSTATE エラーコード</td>
-            </tr>
-            <tr>
-                <td><m-b>%s</m-b></td>
-                <td>プロセスの開始タイムスタンプ</td>
-            </tr>
-            <tr>
-                <td><m-b>%x</m-b></td>
-                <td>トランザクションID(未割り当ては<m-b>0</m-b>)</td>
-            </tr>
-            <tr>
-                <td><m-b>%l</m-b></td>
-                <td>各セッションまたおは各プロセスのログ行番号</td>
-            </tr>
-        </tbody>
-    </table>
 
     <script src="./asset/dexie.min.js"></script>
     <script src="./asset/jquery-3.7.1.slim.min.js"></script>
