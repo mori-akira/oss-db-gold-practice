@@ -3356,7 +3356,7 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         WALレコードを出力しない<m-b>unlogged</m-b>テーブルでは、ストリーミングレプリケーションによるレプリケーションはできない。
     </p>
 
-    <h3>ストリーミングレプリケーションの設定 (walsender)</h3>
+    <h3>ストリーミングレプリケーションの設定 - walsender</h3>
     <table>
         <thead>
             <tr>
@@ -3399,7 +3399,7 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         </tbody>
     </table>
 
-    <h3>ストリーミングレプリケーションの設定 (walreceiver)</h3>
+    <h3>ストリーミングレプリケーションの設定 - walreceiver</h3>
     <table>
         <thead>
             <tr>
@@ -3450,7 +3450,7 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         <li><m-b>startup</m-b>プロセスがWALレコードを、再適用する</li>
     </ol>
 
-    <h3>可能なレプリケーション構成</h3>
+    <h3>可能なレプリケーション構成 - 論理レプリケーション</h3>
     <p>
         ストリーミングレプリケーションは、<m-b>1:n</m-b>の関係でスタンバイを構成できる、
         <m-b>マルチスタンバイ構成</m-b>と呼ばれる構成である。
@@ -3537,7 +3537,7 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
 <m-b>primary_conninfo = 'user=postgres port=5432 application_name=sby'</m-b>
     </code></pre>
 
-    <h3>レプリケーションの状況確認</h3>
+    <h3>レプリケーションの状況確認 - 論理レプリケーション</h3>
     <ul>
         <li>
             <b><m-b>サーバーログ</m-b>の確認</b><br>
@@ -4166,7 +4166,7 @@ ALTER TABLE テーブル名 <m-b>REPLICA IDENTITY 設定値</m-b>;
         </tbody>
     </table>
 
-    <h3>可能なレプリケーション構成</h3>
+    <h3>可能なレプリケーション構成 - ストリーミングレプリケーション</h3>
     <p>
         論理レプリケーションは、ストリーミングレプリケーションと同じく<m-b>1:n</m-b>の<m-b>マルチサブスクライバ</m-b>構成や
         <m-b>カスケード</m-b>構成を取ることができる。
@@ -4176,7 +4176,7 @@ ALTER TABLE テーブル名 <m-b>REPLICA IDENTITY 設定値</m-b>;
         そのため、<m-b>メジャーバージョンアップ</m-b>の手法として活用が期待できる。
     </p>
 
-    <h3>レプリケーションの状況確認</h3>
+    <h3>レプリケーションの状況確認 - ストリーミングレプリケーション</h3>
     <p>
         ストリーミングレプリケーションと同様に、次の手順で動作確認ができる。
     </p>
