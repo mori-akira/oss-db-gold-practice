@@ -2751,7 +2751,7 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
         </tbody>
     </table>
 
-    <h3>サーバログを何に出力するかの設定</h3>
+    <h3>サーバログに何を出力するかの設定</h3>
     <table>
         <thead>
             <tr>
@@ -2837,6 +2837,14 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
                 <td><m-b>log_transaction_sample_rate</m-b></td>
                 <td><m-b>0.0</m-b></td>
                 <td>すべてのトランザクションをログ出力する際に出力割合を0.0~1.0で指定</td>
+            </tr>
+            <tr>
+                <td><m-b>log_temp_files</m-b></td>
+                <td><m-b>-1</m-b></td>
+                <td>
+                    一時ファイル作成時に、<m-b>ファイル名</m-b>と<m-b>サイズ</m-b>をログに出力するか指定
+                    指定した値の<m-b>サイズ</m-b>以上のファイルがログに出力される。
+                </td>
             </tr>
         </tbody>
     </table>
@@ -6888,7 +6896,55 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         このファイルはパラメータ<m-b>stats_temp_directory</m-b>で指定することができ、デフォルト値は<m-b>pg_stat_tmp</m-b>となっている。
     </p>
 
-    <h3>pg_stat_sslビュー</h3>
+    <h3>pg_statsビューの主なカラム</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>カラム</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>tablename</m-b></td>
+                <td>テーブル名</td>
+            </tr>
+            <tr>
+                <td><m-b>attname</m-b></td>
+                <td>カラム名</td>
+            </tr>
+            <tr>
+                <td><m-b>inherited</m-b></td>
+                <td>継承した列か</td>
+            </tr>
+            <tr>
+                <td><m-b>null_frac</m-b></td>
+                <td>NULL値の割合</td>
+            </tr>
+            <tr>
+                <td><m-b>avg_width</m-b></td>
+                <td>カラムの平均幅(<m-b>バイト数</m-b>)</td>
+            </tr>
+            <tr>
+                <td><m-b>n_distinct</m-b></td>
+                <td>
+                    ゼロより大きい値の場合、列内のユニーク値の推定<br>
+                    ゼロより小さい値の場合、ユニーク値の割合の負数 (行数 / ユニーク値)<br>
+                    <m-b>-1</m-b>の値をとる場合、列値は完全一意と推定される。
+                </td>
+            </tr>
+            <tr>
+                <td><m-b>most_common_vals</m-b></td>
+                <td>最も頻繁に出現する値のリスト(対象はスカラー値)</td>
+            </tr>
+            <tr>
+                <td><m-b>correlation</m-b></td>
+                <td>相関値(-1.0 ~ 1.0の数値)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>pg_stat_sslビューの主なカラム</h3>
     <table>
         <thead>
             <tr>
@@ -6943,17 +6999,48 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         </tbody>
     </table>
 
+    <h3>pg_stat_archiverビューの主なカラム</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>カラム</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>archived_count</m-b></td>
+                <td>アーカイブに成功したWALファイルの数</td>
+            </tr>
+            <tr>
+                <td><m-b>last_archived_wal</m-b></td>
+                <td>最後にアーカイブに成功したWALファイルの名前</td>
+            </tr>
+            <tr>
+                <td><m-b>last_archived_time</m-b></td>
+                <td>最後にアーカイブに成功した時刻</td>
+            </tr>
+            <tr>
+                <td><m-b>failed_count</m-b></td>
+                <td>アーカイブに失敗したWALファイルの数</td>
+            </tr>
+            <tr>
+                <td><m-b>last_failed_wal</m-b></td>
+                <td>最後にアーカイブに失敗したWALファイルの名前</td>
+            </tr>
+            <tr>
+                <td><m-b>last_failed_time</m-b></td>
+                <td>最後にアーカイブに失敗した時刻</td>
+            </tr>
+        </tbody>
+    </table>
+
     <h3>WALの修正</h3>
     <p>
         WALが壊れてしまうとPostgreSQLは読みだすWALが分からなくなり、起動ができなくなる。
         このような場合、<m-b>pg_resetwal</m-b>コマンドを用いて修復ができる。
         このコマンドは、正常な位置でWALが読み書きできるようにPostgreSQL内部の制御情報を修正する。
     </p>
-    <blockquote>
-        <a href="https://www.postgresql.jp/docs/12/app-pgresetwal.html" target="_blank">
-            pg_resetwal
-        </a>
-    </blockquote>
 
     <h3>開発者向けの設定</h3>
     <table>
