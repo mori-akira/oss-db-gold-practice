@@ -6690,13 +6690,13 @@ ALTER FUNCTION 関数名 <m-b>ROWS 返却する行数</m-b>;
 
     <h3>関数digest()</h3>
     <p>
-        第1引数data(<m-b>test</m-b>型/<m-b>bytea</m-b>型)の<m-b>バイナリハッシュ</m-b>を計算する関数。
+        第1引数data(<m-b>text</m-b>型/<m-b>bytea</m-b>型)の<m-b>バイナリハッシュ</m-b>を計算する関数。
         第2引数でアルゴリズムを指定することができ、<m-b>md5</m-b>、<m-b>sh1</m-b>、<m-b>sh224</m-b>、<m-b>sh256</m-b>、<m-b>sh384</m-b>、<m-b>sh512</m-b>から選択できる。
     </p>
 
     <h3>関数hmac()</h3>
     <p>
-        第2引数keyをキーとして、第1引数data(<m-b>test</m-b>型/<m-b>bytea</m-b>型)の<m-b>バイナリハッシュ</m-b>を計算する関数。
+        第2引数keyをキーとして、第1引数data(<m-b>text</m-b>型/<m-b>bytea</m-b>型)の<m-b>バイナリハッシュ</m-b>を計算する関数。
         第3引数でアルゴリズムを指定することができ、<m-b>md5</m-b>、<m-b>sh1</m-b>、<m-b>sh224</m-b>、<m-b>sh256</m-b>、<m-b>sh384</m-b>、<m-b>sh512</m-b>から選択できる。
         関数digest()と異なる点は、ハッシュ化にキーを用いるため、<m-b>ハッシュ値の改竄</m-b>を検知できる点である。
     </p>
@@ -7093,9 +7093,14 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         </thead>
         <tbody>
             <tr>
-                <td><m-b>pg_cancel_backend(pid:int)</m-b></td>
+                <td><m-b>pg_cancel_backend(pid: int)</m-b></td>
                 <td><m-b>boolean</m-b></td>
-                <td>バックエンドプロセスをキャンセルする</td>
+                <td>バックエンドプロセスをキャンセルする (<m-b>SIGINT</m-b>シグナルを送る)</td>
+            </tr>
+            <tr>
+                <td><m-b>pg_terminate_backend(pid: int)</m-b></td>
+                <td><m-b>boolean</m-b></td>
+                <td>バックエンドプロセスをキャンセルする (<m-b>SIGTERM</m-b>シグナルを送る)</td>
             </tr>
             <tr>
                 <td><m-b>pg_reload_conf()</m-b></td>
@@ -7127,6 +7132,23 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         <li><m-b>CREATE USER MAPPING</m-b>を用いて、外部サーバへのアクセスを許可するユーザごとにユーザマッピングを作成する</li>
         <li><m-b>CREATE FOREIGN TABLE</m-b>を用いて、アクセスするリモートデータベースのテーブルごとに外部テーブルを作成する</li>
     </ol>
+
+    <h3>論理レプリケーションによってレプリケーションがサポートされるもの</h3>
+    <ul>
+        <li><m-b>テーブル</m-b></li>
+        <li><m-b>パーティション・テーブル</m-b></li>
+        <li><m-b>TRUNCATE</m-b></li>
+        <li><m-b>DML</m-b></li>
+    </ul>
+
+    <h3>論理レプリケーションによってレプリケーションがサポートされないもの</h3>
+    <ul>
+        <li><m-b>DDL</m-b></li>
+        <li><m-b>スキーマ</m-b></li>
+        <li><m-b>ビュー</m-b></li>
+        <li><m-b>マテリアライズドビュー</m-b></li>
+        <li><m-b>ラージオブジェクト</m-b></li>
+    </ul>
 
     <script src="./asset/dexie.min.js"></script>
     <script src="./asset/jquery-3.7.1.slim.min.js"></script>
