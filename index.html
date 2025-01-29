@@ -107,7 +107,7 @@
             </tr>
             <tr>
                 <td><mask-block>パラレルワーカ</mask-block></td>
-                <td class="wrappable"><m-b>parallel workder for プロセスID</m-b><br>というフォーマットで出力される</td>
+                <td class="wrappable"><m-b>parallel worker for プロセスID</m-b><br>というフォーマットで出力される</td>
                 <td>パラレルスキャン実行時に起動され、クエリを処理する</td>
             </tr>
         </tbody>
@@ -612,7 +612,7 @@
     <h4>pg_hba.conf</h4>
     <pre><code>
 # TYPE DATABASE USER METHOD
-host all all 192.168.10.0/24 <m-b>ident map=foo_indent</m-b>
+host all all 192.168.10.0/24 <m-b>ident map=foo_ident</m-b>
     </code></pre>
 
     <h2>4章 処理/制御の基本</h2>
@@ -3624,7 +3624,7 @@ CREATE TABLE tbl(hoge text) <m-b>TABLESPACE</m-b> テーブル空間名;
 
     <h3>pg_promoteを用いる</h3>
     <p>
-        <m-b>スーパユーザ</m-b>権限で関数pg_promoteを実行すると、昇格処理がなされる。
+        <m-b>スーパーユーザ</m-b>権限で関数pg_promoteを実行すると、昇格処理がなされる。
         pg_promoteは引数、<m-b>Boolean</m-b>型の<m-b>wait</m-b>と<m-b>Integer</m-b>型の<m-b>wait_seconds</m-b>を
         受け取り、デフォルトは<m-b>wait=true</m-b>、<m-b>wait_seconds=60</m-b>である。
         これは、完了するのを<m-b>60</m-b>秒待ち、処理が成功すれば<m-b>True</m-b>、失敗すれば<m-b>False</m-b>を返す。
@@ -3943,7 +3943,7 @@ synchronous_standby_names = <m-b>'sby'</m-b>
         新プライマリ、新スタンバイでそれぞれWALの適用位置を確認し、矛盾がある場合はベースバックアップを取得して再構築を行う。
         または、コマンド<m-b>pg_rewind</m-b>を用いて、差分のみを解消する手段もある。
         このコマンドを使用する場合、postgresql.confのパラメータ<m-b>wal_log_hints</m-b>をonにするか、クラスタ初期化時に<m-b>データチェックサム</m-b>を有効化する必要がある。
-        また、<m-b>スーパユーザ</m-b>権限と<m-b>replication</m-b>権限が必要となる。
+        また、<m-b>スーパーユーザ</m-b>権限と<m-b>replication</m-b>権限が必要となる。
     </p>
 
     <h3>コンフリクトの緩和策 - WAL</h3>
@@ -6738,12 +6738,12 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
     <h3>WAL書き込みとページ</h3>
     <p>
         パラメータ<m-b>full_page_writes</m-b>をONにすると、チェックポイント後の各ページの更新処理の際に、更新対象のページすべての内容をWALに書き込む。
-        一方、OFFにすると、更新分のデータのみがWALに書き込まれれ、応答性能が向上しWALの書き込み量が低減する。
+        一方、OFFにすると、更新分のデータのみがWALに書き込まれ、応答性能が向上しWALの書き込み量が低減する。
         ただし、クラッシュ時にページのデータが新旧混在する状況となってしまう可能性があり、完全な<m-b>リカバリ</m-b>ができない場合がある。
         デフォルトでは<m-b>ON</m-b>である。<br>
         また、パラメータ<m-b>wal_compression</m-b>がONの場合、WALに書き出すページを圧縮する。
         圧縮されたページは、<m-b>WALを再適用</m-b>する際に展開される。
-        デフォルトは<m-b>OFF</m-b>であり、設定を変更できるのは<m-b>スーパユーザ</m-b>である。
+        デフォルトは<m-b>OFF</m-b>であり、設定を変更できるのは<m-b>スーパーユーザ</m-b>である。
     </p>
 
     <h3>ALTER SYSTEM</h3>
@@ -6753,7 +6753,7 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         パラメータにキーワード<m-b>DEFAULT</m-b>を指定する、または<m-b>RESET</m-b>句を使用すると、<m-b>postgresql.auto.conf</m-b>からパラメータのエントリを削除する。
         すべてのエントリを削除する場合、<m-b>RESET ALL</m-b>句を指定する。
         ALTER SYSTEMで設定された値は、<m-b>SIGHUP</m-b>シグナルを送った場合、またはコマンド<m-b>pg_ctl reload</m-b>を使用した場合に有効となる。
-        このコマンドを実行できるのは<m-b>スーパユーザ</m-b>のみである。
+        このコマンドを実行できるのは<m-b>スーパーユーザ</m-b>のみである。
     </p>
 
     <h3>接続に関する環境変数</h3>
@@ -6822,7 +6822,7 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
                 <td>無効なタプル数</td>
             </tr>
             <tr>
-                <td><m-b>deat_tuple_len</m-b></td>
+                <td><m-b>dead_tuple_len</m-b></td>
                 <td>無効なタプルの物理サイズ(バイト単位)</td>
             </tr>
             <tr>
@@ -7035,6 +7035,38 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         </tbody>
     </table>
 
+    <h3>pg_stat_activity.wait_event_typeが取る主な値</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>値</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>LWLock</m-b></td>
+                <td>軽量ロックを取得している</td>
+            </tr>
+            <tr>
+                <td><m-b>Lock</m-b></td>
+                <td>重量ロックを取得している</td>
+            </tr>
+            <tr>
+                <td><m-b>Activity</m-b></td>
+                <td>アイドル状態</td>
+            </tr>
+            <tr>
+                <td><m-b>Client</m-b></td>
+                <td>アプリケーションによるソケット上での何らかの活動を待機している</td>
+            </tr>
+            <tr>
+                <td><m-b>IO</m-b></td>
+                <td>入出力の完了を待機している</td>
+            </tr>
+        </tbody>
+    </table>
+
     <h3>WALの修正</h3>
     <p>
         WALが壊れてしまうとPostgreSQLは読みだすWALが分からなくなり、起動ができなくなる。
@@ -7069,7 +7101,7 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
             </tr>
             <tr>
                 <td><m-b>pre_auth_delay</m-b></td>
-                <td>サーバプロセスが始まり認証手続きが始まる　前に、指定した秒数の遅延が発生する</td>
+                <td>サーバプロセスが始まり認証手続きが始まる前に、指定した秒数の遅延が発生する</td>
             </tr>
             <tr>
                 <td><m-b>trace_notify</m-b></td>
