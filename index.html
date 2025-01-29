@@ -1141,7 +1141,7 @@ SELECT c || v FROM example;
     <h3>型名のエイリアス</h3>
     <p>
         PostgreSQLでは、異なる名称で同じ意味を示すデータ型がいくつか存在する。<br>
-        例えば、数値型では、<m-b>int2</m-b>(smallintと同義)、<m-b>int4</m-b>(integherと同義)、
+        例えば、数値型では、<m-b>int2</m-b>(smallintと同義)、<m-b>int4</m-b>(integerと同義)、
         <m-b>int8</m-b>(bigintと同義)、<m-b>decimal</m-b>(numericと同義)、<m-b>float</m-b>(double precisionと同義)
         などがある。<br>
         なお、PostgreSQLのシステムカタログ(<m-b>pg_type.typename</m-b>)上では、SQL標準規定でない型名が定義されている場合がある。
@@ -1301,7 +1301,7 @@ CREATE TABLE score(
         テーブル作成後に格納方法を指定する場合、次のコマンドを実行すればよい。
     </p>
     <pre><code>
-ALTER TALBE テーブル名 ALTER 列名 <m-b>SET STORAGE 格納方法</m-b>
+ALTER TABLE テーブル名 ALTER 列名 <m-b>SET STORAGE 格納方法</m-b>
     </code></pre>
 
     <h3>遺伝的問い合わせ最適化</h3>
