@@ -99,20 +99,24 @@ table > thead th {
   background-color: #333;
 }
 
-table > tbody td {
+table > tbody td,
+table > tbody th {
   padding: 0.3rem 1rem;
   border-bottom: 1px solid black;
 }
 
-table > tbody td:not(:last-of-type) {
+table > tbody td:not(:last-of-type),
+table > tbody th:not(:last-of-type) {
   white-space: nowrap;
 }
 
-table > tbody td.wrappable {
+table > tbody td.wrappable,
+table > tbody th.wrappable {
   white-space: normal !important;
 }
 
-table > tbody td.no-wrappable {
+table > tbody td.no-wrappable,
+table > tbody th.no-wrappable {
   white-space: nowrap !important;
 }
 

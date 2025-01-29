@@ -7182,6 +7182,39 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         <li><m-b>ラージオブジェクト</m-b></li>
     </ul>
 
+    <h3>重量ロックと軽量ロックの違い</h3>
+    <table>
+        <thead>
+            <tr>
+                <td></td>
+                <th>軽量ロック</th>
+                <th>重量ロック</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th>主な用途</th>
+                <td><m-b>共有メモリなどの内部リソースの制御</m-b></td>
+                <td><m-b>テーブルや行レベルの排他制御</m-b></td>
+            </tr>
+            <tr>
+                <th>デッドロック検出</th>
+                <td><m-b>なし</m-b></td>
+                <td><m-b>あり</m-b></td>
+            </tr>
+            <tr>
+                <th>ユーザによる明示的な取得可否</th>
+                <td><m-b>不可</m-b></td>
+                <td><m-b>可能</m-b></td>
+            </tr>
+            <tr>
+                <th>wait_event_typeの表記</th>
+                <td><m-b>LWLock</m-b></td>
+                <td><m-b>Lock</m-b></td>
+            </tr>
+        </tbody>
+    </table>
+
     <script src="./asset/dexie.min.js"></script>
     <script src="./asset/jquery-3.7.1.slim.min.js"></script>
     <script src="./asset/script.js"></script>
