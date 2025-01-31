@@ -7259,6 +7259,30 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         </tbody>
     </table>
 
+    <h3>タイムアウト関連のパラメータ</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>パラメータ</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>statement_timeout</m-b></td>
+                <td>クエリがクライアントからサーバに届いた時点から、指定された時間 (<m-b>ミリ秒</m-b>) を超えたクエリを停止させる</td>
+            </tr>
+            <tr>
+                <td><m-b>lock_timeout</m-b></td>
+                <td>各種ロックの取得を試みる場合に、指定された時間 (<m-b>ミリ秒</m-b>) を超えた場合に命令を停止させる</td>
+            </tr>
+            <tr>
+                <td><m-b>idle_in_transaction_session_timeout</m-b></td>
+                <td>開かれたトランザクションが、指定された時間 (<m-b>ミリ秒</m-b>) を超えて<m-b>アイドル</m-b>状態の場合に、セッションを終了する</td>
+            </tr>
+        </tbody>
+    </table>
+
     <script src="./asset/dexie.min.js"></script>
     <script src="./asset/jquery-3.7.1.slim.min.js"></script>
     <script src="./asset/script.js"></script>
