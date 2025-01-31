@@ -7111,6 +7111,66 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         </tbody>
     </table>
 
+    <h3>pg_stat_statementsモジュール</h3>
+    <p>
+        pg_stat_statementsモジュールは、サーバで実行される全てのSQL文の統計情報を記録する。
+        <m-b>shared_preload_libraries</m-b>パラメータに<m-b>pg_stat_statements</m-b>を追加し、モジュールをロードする。
+        このモジュールは、<m-b>pg_stat_statements</m-b>ビューや関数<m-b>pg_stat_statements_reset</m-b>、<m-b>pg_stat_statements</m-b>を提供する。
+        <m-b>CREATE EXTENSION pg_stat_statements</m-b>を実行することで、特定の<m-b>データベース</m-b>で利用可能となる。
+    </p>
+
+    <h3>pg_stat_statementsビューの主なカラム</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>カラム</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>userid</m-b></td>
+                <td>SQL文を実行したユーザのOID</td>
+            </tr>
+            <tr>
+                <td><m-b>dbid</m-b></td>
+                <td>SQL文を実行したデータベースのOID</td>
+            </tr>
+            <tr>
+                <td><m-b>queryid</m-b></td>
+                <td>分の解析木から計算した内部ハッシュコード</td>
+            </tr>
+            <tr>
+                <td><m-b>query</m-b></td>
+                <td>代表的な分の文字列</td>
+            </tr>
+            <tr>
+                <td><m-b>calls</m-b></td>
+                <td>実行回数</td>
+            </tr>
+            <tr>
+                <td><m-b>total_time</m-b></td>
+                <td>合計実行時間</td>
+            </tr>
+            <tr>
+                <td><m-b>min_time</m-b></td>
+                <td>最小実行時間</td>
+            </tr>
+            <tr>
+                <td><m-b>max_time</m-b></td>
+                <td>最大実行時間</td>
+            </tr>
+            <tr>
+                <td><m-b>mean_time</m-b></td>
+                <td>平均実行時間</td>
+            </tr>
+            <tr>
+                <td><m-b>rows</m-b></td>
+                <td>取得行数、または影響を受けた行数</td>
+            </tr>
+        </tbody>
+    </table>
+
     <h3>WALの修正</h3>
     <p>
         WALが壊れてしまうとPostgreSQLは読みだすWALが分からなくなり、起動ができなくなる。
