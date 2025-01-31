@@ -7067,6 +7067,50 @@ SELECT <m-b>pswhash = crypt('入力されたパスワード', pswhash)</m-b> AS 
         </tbody>
     </table>
 
+    <h3>pg_stat_bgwriterビューの主なカラム</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>カラム</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><m-b>checkpoints_timed</m-b></td>
+                <td>これまでに実行された、スケジュールされたチェックポイントの回数</td>
+            </tr>
+            <tr>
+                <td><m-b>checkpoints_req</m-b></td>
+                <td>これまでに実行された、要求されたチェックポイントの回数</td>
+            </tr>
+            <tr>
+                <td><m-b>checkpoint_write_time</m-b></td>
+                <td>チェックポイント処理における、ディスクへのファイル書き込みに費やした総時間(<m-b>ミリ秒</m-b>)</td>
+            </tr>
+            <tr>
+                <td><m-b>checkpoint_sync_time</m-b></td>
+                <td>チェックポイント処理における、ディスクへのファイル同期に費やした総時間(<m-b>ミリ秒</m-b>)</td>
+            </tr>
+            <tr>
+                <td><m-b>buffers_checkpoint</m-b></td>
+                <td>チェックポイント期間に書き出されたバッファ数</td>
+            </tr>
+            <tr>
+                <td><m-b>buffers_clean</m-b></td>
+                <td>バックグラウンドライタによって書き出されたバッファ数</td>
+            </tr>
+            <tr>
+                <td><m-b>buffers_backend</m-b></td>
+                <td>バックエンドにより直接書き出されたバッファ数</td>
+            </tr>
+            <tr>
+                <td><m-b>buffers_alloc</m-b></td>
+                <td>割り当てられたバッファ数</td>
+            </tr>
+        </tbody>
+    </table>
+
     <h3>WALの修正</h3>
     <p>
         WALが壊れてしまうとPostgreSQLは読みだすWALが分からなくなり、起動ができなくなる。
